@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Map as MapIcon, List, Search, Filter, Car, Star, Navigation, AlertCircle, TrendingDown, Store, LogIn, Mail, Lock, LogOut, Plus, CheckCircle2, MapPin, Clock, Info } from 'lucide-react';
+import { Map as MapIcon, List, Search, Filter, Car, Star, Navigation, AlertCircle, TrendingDown, Store, LogIn, Mail, Lock, LogOut, Plus, CheckCircle2, MapPin, Info } from 'lucide-react';
 import { mockCarWashes } from './data';
 import type { CarWash, CarWashType } from './data';
 import { clsx, type ClassValue } from 'clsx';
