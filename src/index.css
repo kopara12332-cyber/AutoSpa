@@ -20,43 +20,88 @@
 }
 
 .marker-pin {
-  width: 36px;
-  height: 36px;
-  border-radius: 50% 50% 50% 0;
-  background: #D4AF37; /* Default Gold */
+  width: 38px;
+  height: 38px;
   position: absolute;
-  transform: rotate(-45deg);
   left: 50%;
   top: 50%;
-  margin: -18px 0 0 -18px;
+  margin: -19px 0 0 -19px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
-  border: 2px solid #000;
   transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 2px solid #000;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
 }
 
-/* Category Specific Markers */
+/* Bezdotykowa: Standard Circle Pin */
 .marker-pin.bezdotykowa {
+  border-radius: 50% 50% 50% 0;
   background: #D4AF37; /* Gold */
-  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+  transform: rotate(-45deg);
+}
+.marker-pin.bezdotykowa .marker-icon-inner {
+  transform: rotate(45deg);
+  color: #000;
 }
 
+/* Ręczna: Diamond / Rotated Square */
 .marker-pin.reczna {
-  background: #C0C0C0; /* Silver */
-  box-shadow: 0 4px 12px rgba(192, 192, 192, 0.3);
+  border-radius: 4px;
+  background: #000; /* Black Center */
+  border: 3px solid #D4AF37; /* Gold Border */
+  transform: rotate(45deg);
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+}
+.marker-pin.reczna .marker-icon-inner {
+  transform: rotate(-45deg);
+  color: #D4AF37;
 }
 
+/* Autodetailing: Octagon / Premium Glow */
 .marker-pin.autodetailing {
-  background: #FFFFFF; /* White/Diamond */
-  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+  border-radius: 30% 70% 30% 70% / 70% 30% 70% 30%; /* Unique Organic Shape */
+  background: #D4AF37;
+  border: 2px solid #fff;
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.6), 0 0 10px #fff;
+  animation: premium-pulse 2s infinite ease-in-out;
+}
+.marker-pin.autodetailing .marker-icon-inner {
+  color: #000;
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
+}
+
+@keyframes premium-pulse {
+  0% { transform: scale(1); box-shadow: 0 0 20px rgba(212, 175, 55, 0.6); }
+  50% { transform: scale(1.15); box-shadow: 0 0 30px rgba(212, 175, 55, 0.8), 0 0 15px #fff; }
+  100% { transform: scale(1); box-shadow: 0 0 20px rgba(212, 175, 55, 0.6); }
 }
 
 .marker-pin:hover {
-  transform: rotate(-45deg) scale(1.2);
-  filter: brightness(1.2);
   z-index: 1000;
+  filter: brightness(1.3);
+  cursor: pointer;
+}
+
+.marker-pin.promoted::after {
+  content: 'HOT';
+  position: absolute;
+  top: -15px;
+  right: -15px;
+  background: #fff;
+  color: #000;
+  font-size: 8px;
+  font-weight: 900;
+  padding: 2px 4px;
+  border-radius: 4px;
+  border: 1px solid #D4AF37;
+  transform: rotate(15deg);
+  animation: bounce 0.5s infinite alternate;
+}
+
+@keyframes bounce {
+  from { transform: rotate(15deg) translateY(0); }
+  to { transform: rotate(15deg) translateY(-3px); }
 }
 
 .marker-pin.promoted {

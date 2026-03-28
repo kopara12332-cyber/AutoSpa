@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Map as MapIcon, List, Search, Filter, Car, Star, Navigation, AlertCircle, TrendingDown, Store } from 'lucide-react';
+import { Map as MapIcon, List, Search, Filter, Car, Star, Navigation, AlertCircle, TrendingDown, Store, Droplets, Sparkles } from 'lucide-react';
 import { mockCarWashes } from './data';
 import type { CarWash, CarWashType } from './data';
 import { clsx, type ClassValue } from 'clsx';
@@ -26,9 +26,9 @@ const createCustomIcon = (type: CarWashType, isPromoted: boolean) => {
       case 'bezdotykowa':
         return `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>`;
       case 'reczna':
-        return `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 11V7a5 5 0 0 1 10 0v4"/><path d="M5 18h14"/><path d="M5 22h14"/><rect width="18" height="7" x="3" y="11" rx="2"/></svg>`;
+        return `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16.3c2.2 0 4-1.8 4-4 0-2.2-4-6-4-6s-4 3.8-4 6c0 2.2 1.8 4 4 4z"/><path d="M17 16.3c2.2 0 4-1.8 4-4 0-2.2-4-6-4-6s-4 3.8-4 6c0 2.2 1.8 4 4 4z"/></svg>`;
       case 'autodetailing':
-        return `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>`;
+        return `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="m5 3 1 1"/><path d="m19 21 1 1"/><path d="m5 21 1-1"/><path d="m19 3 1-1"/></svg>`;
       default:
         return `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>`;
     }
@@ -150,23 +150,32 @@ function App() {
               ))}
             </MapContainer>
 
-             <div className="absolute bottom-4 left-4 right-4 bg-black/90 backdrop-blur p-3 rounded-xl shadow-gold z-[1000] border border-gold/30">
-               <div className="flex justify-between items-center mb-2">
-                 <span className="text-[10px] font-bold text-gold uppercase tracking-wider">Legenda:</span>
-                 <span className="text-[10px] text-white/60">Pulsujące = Promocja</span>
+             <div className="absolute bottom-4 left-4 right-4 bg-black/90 backdrop-blur p-4 rounded-2xl shadow-gold z-[1000] border border-gold/30">
+               <div className="flex justify-between items-center mb-3">
+                 <span className="text-[10px] font-black text-gold uppercase tracking-[0.2em]">Oznaczenia mapy</span>
+                 <div className="flex items-center gap-1">
+                   <div className="w-2 h-2 bg-white rounded-sm rotate-45 animate-pulse"></div>
+                   <span className="text-[9px] text-white/60 font-bold uppercase italic">Promocje</span>
+                 </div>
                </div>
-               <div className="flex justify-around gap-2">
-                 <div className="flex items-center gap-1.5">
-                   <div className="w-3 h-3 rounded-full bg-[#D4AF37] border border-black shadow-[0_0_5px_rgba(212,175,55,0.5)]"></div>
-                   <span className="text-[9px] text-white font-medium">Bezdotyk.</span>
+               <div className="flex justify-between gap-2">
+                 <div className="flex flex-col items-center gap-1 flex-1">
+                   <div className="w-6 h-6 rounded-full bg-[#D4AF37] border-2 border-black flex items-center justify-center shadow-lg">
+                     <Car className="w-3.5 h-3.5 text-black" />
+                   </div>
+                   <span className="text-[8px] text-white font-black uppercase tracking-tighter">Bezdotyk.</span>
                  </div>
-                 <div className="flex items-center gap-1.5">
-                   <div className="w-3 h-3 rounded-full bg-[#C0C0C0] border border-black shadow-[0_0_5px_rgba(192,192,192,0.5)]"></div>
-                   <span className="text-[9px] text-white font-medium">Ręczna</span>
+                 <div className="flex flex-col items-center gap-1 flex-1">
+                   <div className="w-6 h-6 rotate-45 bg-black border-2 border-[#D4AF37] flex items-center justify-center shadow-lg">
+                     <Droplets className="w-3.5 h-3.5 text-[#D4AF37] -rotate-45" />
+                   </div>
+                   <span className="text-[8px] text-white font-black uppercase tracking-tighter">Ręczna</span>
                  </div>
-                 <div className="flex items-center gap-1.5">
-                   <div className="w-3 h-3 rounded-full bg-[#FFFFFF] border border-black shadow-[0_0_5px_rgba(255,255,255,0.5)]"></div>
-                   <span className="text-[9px] text-white font-medium">Detailing</span>
+                 <div className="flex flex-col items-center gap-1 flex-1">
+                   <div className="w-7 h-7 bg-[#D4AF37] border-2 border-white flex items-center justify-center shadow-[0_0_10px_#D4AF37] animate-pulse" style={{ borderRadius: '30% 70% 30% 70% / 70% 30% 70% 30%' }}>
+                     <Sparkles className="w-4 h-4 text-black" />
+                   </div>
+                   <span className="text-[8px] text-gold font-black uppercase tracking-tighter">Detailing</span>
                  </div>
                </div>
              </div>
