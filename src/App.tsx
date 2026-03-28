@@ -4,25 +4,31 @@ import { mockCarWashes } from './data';
 import type { CarWash, CarWashType } from './data';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { 
-  APIProvider, 
-  Map, 
-  Marker, 
-  InfoWindow,
-  useMap
-} from '@vis.gl/react-google-maps';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import L from 'leaflet';
+
+// Leaflet icon fix
+import icon from 'leaflet/dist/images/marker-icon.png';
+import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+
+let DefaultIcon = L.icon({
+    iconUrl: icon,
+    shadowUrl: iconShadow,
+    iconSize: [25, 41],
+    iconAnchor: [12, 41]
+});
+
+L.Marker.prototype.options.icon = DefaultIcon;
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
 // Map Updater Component to center map on selection
-function MapUpdater({ center }: { center: { lat: number, lng: number } }) {
+function MapUpdater({ center }: { center: [number, number] }) {
   const map = useMap();
   useEffect(() => {
-    if (map) {
-      map.panTo(center);
-    }
+    map.setView(center, map.getZoom());
   }, [center, map]);
   return null;
 }
@@ -33,8 +39,7 @@ function App() {
   const [activeView, setActiveView] = useState<View>('map');
   const [selectedType, setSelectedType] = useState<CarWashType | 'all'>('all');
   const [selectedWash, setSelectedWash] = useState<CarWash | null>(null);
-  const [mapCenter, setMapCenter] = useState<{ lat: number, lng: number }>({ lat: 52.2297, lng: 21.0122 });
-  const [infoWindowShown, setInfoWindowShown] = useState<string | null>(null);
+  const [mapCenter, setMapCenter] = useState<[number, number]>([52.2297, 21.0122]);
 
   const filteredWashes = useMemo(() => {
     if (selectedType === 'all') return mockCarWashes;
@@ -43,12 +48,13 @@ function App() {
 
   const handleWashClick = (wash: CarWash) => {
     setSelectedWash(wash);
-    setMapCenter({ lat: wash.lat, lng: wash.lng });
+    setMapCenter([wash.lat, wash.lng]);
     setActiveView('detail');
   };
 
   const handleMarkerClick = (wash: CarWash) => {
-    setInfoWindowShown(wash.id);
+    setSelectedWash(wash);
+    setActiveView('detail');
   };
 
   return (
@@ -85,105 +91,36 @@ function App() {
       {/* Main Content Area */}
       <main className="flex-1 relative overflow-y-auto">
         {activeView === 'map' && (
-          <div className="h-full relative bg-slate-100 flex items-center justify-center overflow-hidden">
-            <APIProvider 
-              apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
-              onLoad={() => console.log('Google Maps Loaded')}
-              onError={(err) => console.error('Google Maps Load Error:', err)}
-            >
-              <Map
-                style={{width: '100%', height: '100%'}}
-                defaultCenter={mapCenter}
-                defaultZoom={13}
-                gestureHandling={'greedy'}
-                disableDefaultUI={true}
-                // Removed mapId for better compatibility
-                styles={[
-                  {
-                    featureType: "poi.business",
-                    stylers: [{ visibility: "off" }],
-                  },
-                  {
-                    featureType: "poi.attraction",
-                    stylers: [{ visibility: "off" }],
-                  },
-                  {
-                    featureType: "poi.government",
-                    stylers: [{ visibility: "off" }],
-                  },
-                  {
-                    featureType: "poi.medical",
-                    stylers: [{ visibility: "off" }],
-                  },
-                  {
-                    featureType: "poi.park",
-                    elementType: "labels.text",
-                    stylers: [{ visibility: "off" }],
-                  },
-                  {
-                    featureType: "poi.place_of_ worship",
-                    stylers: [{ visibility: "off" }],
-                  },
-                  {
-                    featureType: "poi.school",
-                    stylers: [{ visibility: "off" }],
-                  },
-                  {
-                    featureType: "poi.sports_complex",
-                    stylers: [{ visibility: "off" }],
-                  },
-                  {
-                    featureType: "transit",
-                    stylers: [{ visibility: "simplified" }],
-                  },
-                  {
-                    featureType: "administrative.land_parcel",
-                    stylers: [{ visibility: "off" }],
-                  },
-                ]}
-              >
-                <MapUpdater center={mapCenter} />
-                
-                {filteredWashes.map((wash) => (
-                  <Marker
-                    key={wash.id}
-                    position={{lat: wash.lat, lng: wash.lng}}
-                    onClick={() => handleMarkerClick(wash)}
-                  />
-                ))}
+          <div className="h-full relative">
+            <MapContainer center={mapCenter} zoom={13} scrollWheelZoom={true} className="h-full w-full">
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              <MapUpdater center={mapCenter} />
+              {filteredWashes.map((wash) => (
+                <Marker 
+                  key={wash.id} 
+                  position={[wash.lat, wash.lng]}
+                  eventHandlers={{
+                    click: () => handleMarkerClick(wash),
+                  }}
+                >
+                  <Popup>
+                    <div className="p-1">
+                      <h3 className="font-bold text-sm">{wash.name}</h3>
+                      <p className="text-xs text-slate-500 mb-1">{wash.address}</p>
+                      <div className="flex items-center gap-1">
+                        <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                        <span className="text-xs font-bold">{wash.rating}</span>
+                      </div>
+                    </div>
+                  </Popup>
+                </Marker>
+              ))}
+            </MapContainer>
 
-                {infoWindowShown && (
-                  <InfoWindow
-                    position={{
-                      lat: filteredWashes.find(w => w.id === infoWindowShown)?.lat || 0,
-                      lng: filteredWashes.find(w => w.id === infoWindowShown)?.lng || 0
-                    }}
-                    onCloseClick={() => setInfoWindowShown(null)}
-                  >
-                    {(() => {
-                      const wash = filteredWashes.find(w => w.id === infoWindowShown);
-                      return wash ? (
-                        <div className="p-1 min-w-[120px]">
-                          <h3 className="font-bold text-sm text-slate-900">{wash.name}</h3>
-                          <p className="text-[10px] text-slate-500 mb-2">{wash.address}</p>
-                          <button 
-                            onClick={() => {
-                              setSelectedWash(wash);
-                              setActiveView('detail');
-                            }}
-                            className="w-full py-1 bg-blue-600 text-white text-[10px] rounded-lg font-bold"
-                          >
-                            Szczegóły
-                          </button>
-                        </div>
-                      ) : null;
-                    })()}
-                  </InfoWindow>
-                )}
-              </Map>
-            </APIProvider>
-
-             <div className="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur p-3 rounded-xl shadow-lg text-sm text-slate-600 border border-slate-200 z-10">
+             <div className="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur p-3 rounded-xl shadow-lg text-sm text-slate-600 border border-slate-200 z-[1000]">
                Przesuwaj mapę, aby znaleźć myjnie w okolicy. Kliknij marker, aby zobaczyć szczegóły.
              </div>
           </div>
