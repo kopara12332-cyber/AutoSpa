@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Map as MapIcon, List, Search, Filter, Car, Star, Navigation, AlertCircle, TrendingDown, Store, LogIn, Mail, Lock, LogOut, Plus, CheckCircle2, MapPin, Info, ShieldCheck, XCircle } from 'lucide-react';
+import { Map as MapIcon, List, Search, Filter, Car, Star, Navigation, AlertCircle, TrendingDown, Store, LogIn, Mail, Lock, LogOut, Plus, CheckCircle2, MapPin, Info, ShieldCheck, XCircle, Edit3, Save } from 'lucide-react';
 import { mockCarWashes } from './data';
 import type { CarWash, CarWashType } from './data';
 import { clsx, type ClassValue } from 'clsx';
@@ -353,16 +353,89 @@ function AdminLoginModal({ onLogin, onCancel }: { onLogin: () => void, onCancel:
   );
 }
 
-function AdminPanel({ submissions, onAccept, onReject, onBack }: { submissions: any[], onAccept: (id: string) => void, onReject: (id: string) => void, onBack: () => void }) {
+function AdminPanel({ submissions, onAccept, onReject, onUpdate, onBack }: { submissions: any[], onAccept: (id: string) => void, onReject: (id: string) => void, onUpdate: (updatedWash: any) => void, onBack: () => void }) {
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editData, setEditData] = useState<any>(null);
+
+  const startEdit = (sub: any) => {
+    setEditingId(sub.id);
+    setEditData({ ...sub });
+  };
+
+  const handleSaveEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onUpdate(editData);
+    setEditingId(null);
+    setEditData(null);
+  };
+
+  const toggleService = (service: string) => {
+    setEditData((prev: any) => ({
+      ...prev,
+      services: prev.services.includes(service)
+        ? prev.services.filter((s: string) => s !== service)
+        : [...prev.services, service]
+    }));
+  };
+
   return (
     <div className="space-y-6 py-4 animate-in fade-in duration-500">
       <div className="flex items-center justify-between border-b border-gold/20 pb-4">
-        <h2 className="text-2xl font-black text-gold uppercase italic tracking-tighter">Zarządzanie</h2>
+        <h2 className="text-2xl font-black text-gold uppercase italic tracking-tighter">
+          {editingId ? 'Edycja' : 'Zarządzanie'}
+        </h2>
         <button onClick={onBack} className="p-2 bg-zinc-900 rounded-xl text-gray-500"><XCircle className="w-6 h-6" /></button>
       </div>
 
       <div className="space-y-4">
-        {submissions.length === 0 ? (
+        {editingId && editData ? (
+          <form onSubmit={handleSaveEdit} className="bg-zinc-900 border-2 border-gold/30 p-6 rounded-3xl space-y-6 animate-in slide-in-from-right-4 duration-300">
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-gold uppercase tracking-widest">Nazwa Myjni</label>
+                <input 
+                  className="w-full bg-black border border-zinc-800 rounded-xl py-3 px-4 text-white focus:border-gold outline-none"
+                  value={editData.name}
+                  onChange={e => setEditData({...editData, name: e.target.value})}
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-gold uppercase tracking-widest">Adres</label>
+                <input 
+                  className="w-full bg-black border border-zinc-800 rounded-xl py-3 px-4 text-white focus:border-gold outline-none"
+                  value={editData.address}
+                  onChange={e => setEditData({...editData, address: e.target.value})}
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-gold uppercase tracking-widest">Usługi ({editData.type})</label>
+                <div className="flex flex-wrap gap-2">
+                  {WASH_SPECS[editData.type as CarWashType].map((service: string) => (
+                    <button
+                      key={service}
+                      type="button"
+                      onClick={() => toggleService(service)}
+                      className={cn(
+                        "text-[9px] px-3 py-1.5 rounded-full font-bold uppercase transition-all border",
+                        editData.services.includes(service) ? "bg-gold text-black border-gold" : "bg-black text-gray-500 border-zinc-800"
+                      )}
+                    >
+                      {service}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <button type="submit" className="flex-1 py-3 bg-gold text-black font-black uppercase italic rounded-xl flex items-center justify-center gap-2">
+                <Save className="w-4 h-4" /> Zapisz
+              </button>
+              <button type="button" onClick={() => setEditingId(null)} className="flex-1 py-3 bg-zinc-800 text-white font-black uppercase italic rounded-xl">
+                Anuluj
+              </button>
+            </div>
+          </form>
+        ) : submissions.length === 0 ? (
           <div className="text-center py-20 text-gray-600 italic">Brak nowych zgłoszeń.</div>
         ) : (
           submissions.map(sub => (
@@ -387,6 +460,12 @@ function AdminPanel({ submissions, onAccept, onReject, onBack }: { submissions: 
                   className="flex-1 py-2 bg-emerald-900/50 text-emerald-400 border border-emerald-900 rounded-xl text-[10px] font-black uppercase flex items-center justify-center gap-2 hover:bg-emerald-900"
                 >
                   <CheckCircle2 className="w-4 h-4" /> Akceptuj
+                </button>
+                <button 
+                  onClick={() => startEdit(sub)}
+                  className="flex-1 py-2 bg-zinc-800 text-gold border border-gold/30 rounded-xl text-[10px] font-black uppercase flex items-center justify-center gap-2 hover:bg-zinc-700"
+                >
+                  <Edit3 className="w-4 h-4" /> Edytuj
                 </button>
                 <button 
                   onClick={() => onReject(sub.id)}
@@ -463,6 +542,10 @@ function App() {
 
   const handleRejectWash = (id: string) => {
     setPendingWashes(prev => prev.filter(w => w.id !== id));
+  };
+
+  const handleUpdateSubmission = (updatedWash: any) => {
+    setPendingWashes(prev => prev.map(w => w.id === updatedWash.id ? updatedWash : w));
   };
 
   const filteredWashes = useMemo(() => {
@@ -648,6 +731,7 @@ function App() {
                 submissions={pendingWashes} 
                 onAccept={handleApproveWash} 
                 onReject={handleRejectWash} 
+                onUpdate={handleUpdateSubmission}
                 onBack={() => setIsAdmin(false)}
               />
             ) : !user ? (
