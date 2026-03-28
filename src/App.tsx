@@ -74,21 +74,21 @@ function App() {
   };
 
   return (
-    <div className="flex flex-col h-screen max-w-lg mx-auto bg-[#0d0221] text-slate-100 font-sans shadow-xl relative overflow-hidden">
-      {/* App Header (Synthwave Style) */}
-      <header className="bg-[#1a0b2e] text-white p-4 shadow-[0_0_20px_rgba(255,0,255,0.3)] z-20 flex flex-col gap-4 border-b border-[#ff00ff]/30">
+    <div className="flex flex-col h-screen max-w-lg mx-auto bg-slate-50 text-slate-900 font-sans shadow-xl relative overflow-hidden">
+      {/* App Header (Premium Clean Style) */}
+      <header className="bg-slate-900 text-white p-4 shadow-lg z-20 flex flex-col gap-4">
         <div className="flex justify-between items-center px-2">
           <div className="flex items-center gap-3" onClick={() => setActiveView('map')} style={{ cursor: 'pointer' }}>
-             <div className="bg-[#ff00ff]/20 p-2 rounded-xl shadow-[0_0_10px_#ff00ff]">
-               <Car className="w-6 h-6 text-[#ff00ff]" />
+             <div className="bg-blue-600 p-2 rounded-xl shadow-md">
+               <Car className="w-6 h-6 text-white" />
              </div>
-             <h1 className="text-xl font-bold tracking-tighter italic uppercase text-neon-pink">AutoSpa</h1>
+             <h1 className="text-xl font-bold tracking-tight">AutoSpa</h1>
           </div>
           <div className="flex gap-1">
-            <button className="p-2 hover:bg-[#ff00ff]/20 rounded-full transition-colors text-[#ff00ff]">
+            <button className="p-2 hover:bg-white/10 rounded-full transition-colors">
               <Search className="w-5 h-5" />
             </button>
-            <button className="p-2 hover:bg-[#00ffff]/20 rounded-full transition-colors text-[#00ffff]">
+            <button className="p-2 hover:bg-white/10 rounded-full transition-colors">
               <Filter className="w-5 h-5" />
             </button>
           </div>
@@ -105,7 +105,7 @@ function App() {
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-1 relative overflow-y-auto bg-synth-dark">
+      <main className="flex-1 relative overflow-y-auto">
         {activeView === 'map' && (
           <div className="h-full relative modern-map">
             <MapContainer center={mapCenter} zoom={13} scrollWheelZoom={true} className="h-full w-full" zoomControl={false}>
@@ -123,13 +123,13 @@ function App() {
                     click: () => handleMarkerClick(wash),
                   }}
                 >
-                  <Popup className="synth-popup">
-                    <div className="p-1 bg-[#1a0b2e] text-white rounded-lg">
-                      <h3 className="font-bold text-sm text-[#ff00ff]">{wash.name}</h3>
-                      <p className="text-[10px] opacity-70 mb-1">{wash.address}</p>
+                  <Popup>
+                    <div className="p-1 text-slate-900">
+                      <h3 className="font-bold text-sm">{wash.name}</h3>
+                      <p className="text-[10px] text-slate-500 mb-1">{wash.address}</p>
                       <div className="flex items-center gap-1">
-                        <Star className="w-3 h-3 fill-[#00ffff] text-[#00ffff]" />
-                        <span className="text-xs font-bold text-[#00ffff]">{wash.rating}</span>
+                        <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                        <span className="text-xs font-bold">{wash.rating}</span>
                       </div>
                     </div>
                   </Popup>
@@ -137,14 +137,14 @@ function App() {
               ))}
             </MapContainer>
 
-             <div className="absolute bottom-4 left-4 right-4 bg-[#1a0b2e]/90 backdrop-blur p-3 rounded-xl shadow-[0_0_15px_rgba(255,0,255,0.2)] text-xs text-[#00ffff] border border-[#ff00ff]/30 z-[1000]">
-               Przesuwaj mapę w neonowym świetle. Myjnie z promocją pulsują na błękitno.
+             <div className="absolute bottom-4 left-4 right-4 bg-white/95 backdrop-blur p-3 rounded-xl shadow-premium text-xs text-slate-600 border border-slate-100 z-[1000]">
+               Przesuwaj mapę, aby znaleźć myjnie. Złote punkty to oferty specjalne.
              </div>
           </div>
         )}
 
         {activeView === 'list' && (
-          <div className="p-4 space-y-4">
+          <div className="p-4 space-y-4 bg-slate-50">
             {filteredWashes.map(wash => (
               <CarWashCard key={wash.id} wash={wash} onClick={() => handleWashClick(wash)} />
             ))}
@@ -152,39 +152,39 @@ function App() {
         )}
 
         {activeView === 'detail' && selectedWash && (
-          <div className="bg-[#0d0221] min-h-full">
-            <div className="relative h-48 bg-[#1a0b2e]">
-               <div className="absolute inset-0 bg-gradient-to-t from-[#0d0221] to-transparent"></div>
+          <div className="bg-white min-h-full">
+            <div className="relative h-48 bg-slate-900">
+               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                <button 
                  onClick={() => setActiveView('map')}
-                 className="absolute top-4 left-4 p-2 bg-[#ff00ff]/20 hover:bg-[#ff00ff]/40 rounded-full text-[#ff00ff] backdrop-blur border border-[#ff00ff]/30"
+                 className="absolute top-4 left-4 p-2 bg-white/20 hover:bg-white/40 rounded-full text-white backdrop-blur"
                >
                  <Navigation className="w-5 h-5 rotate-180" />
                </button>
                <div className="absolute bottom-4 left-4 right-4 text-white">
-                 <h2 className="text-2xl font-bold italic uppercase tracking-tighter text-neon-pink">{selectedWash.name}</h2>
-                 <p className="text-sm opacity-70 text-[#00ffff]">{selectedWash.address}</p>
+                 <h2 className="text-2xl font-bold tracking-tight">{selectedWash.name}</h2>
+                 <p className="text-sm opacity-80">{selectedWash.address}</p>
                </div>
             </div>
 
             <div className="p-6 space-y-6">
               <div className="flex justify-between items-center">
                  <div className="flex items-center gap-1">
-                    <Star className="w-5 h-5 fill-[#00ffff] text-[#00ffff]" />
-                    <span className="font-bold text-lg text-[#00ffff]">{selectedWash.rating}</span>
+                    <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
+                    <span className="font-bold text-lg">{selectedWash.rating}</span>
                     <span className="text-slate-400 text-sm">(124 oceny)</span>
                  </div>
-                 <span className="px-3 py-1 bg-[#ff00ff]/10 text-[#ff00ff] border border-[#ff00ff]/30 rounded-full text-xs font-bold uppercase tracking-widest">
+                 <span className="px-3 py-1 bg-slate-100 text-slate-700 border border-slate-200 rounded-full text-xs font-bold uppercase tracking-wider">
                    {selectedWash.type}
                  </span>
               </div>
 
               {selectedWash.isPromoted && (
-                <div className="bg-[#00ffff]/5 border border-[#00ffff]/30 p-4 rounded-xl flex items-start gap-3 shadow-[0_0_15px_rgba(0,255,255,0.1)]">
-                  <TrendingDown className="w-6 h-6 text-[#00ffff] flex-shrink-0" />
+                <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl flex items-start gap-3 shadow-sm">
+                  <TrendingDown className="w-6 h-6 text-amber-600 flex-shrink-0" />
                   <div>
-                    <h4 className="font-bold text-[#00ffff] uppercase italic tracking-tight">Neonowa Promocja!</h4>
-                    <p className="text-[#00ffff]/80 text-sm">{selectedWash.promotionText}</p>
+                    <h4 className="font-bold text-amber-900">Oferta specjalna</h4>
+                    <p className="text-amber-700 text-sm">{selectedWash.promotionText}</p>
                   </div>
                 </div>
               )}
@@ -194,78 +194,78 @@ function App() {
                    icon={<List className="w-5 h-5" />} 
                    label="Kolejka" 
                    value={selectedWash.queueStatus} 
-                   color={selectedWash.queueStatus === 'brak' ? 'text-emerald-400' : selectedWash.queueStatus === 'mała' ? 'text-amber-400' : 'text-rose-500'}
+                   color={selectedWash.queueStatus === 'brak' ? 'text-emerald-600' : selectedWash.queueStatus === 'mała' ? 'text-amber-600' : 'text-rose-600'}
                  />
                  <StatusCard 
                    icon={<AlertCircle className="w-5 h-5" />} 
                    label="Automat" 
                    value={selectedWash.isMachineWorking ? 'Działa' : 'Awaria'} 
-                   color={selectedWash.isMachineWorking ? 'text-emerald-400' : 'text-rose-500'}
+                   color={selectedWash.isMachineWorking ? 'text-emerald-600' : 'text-rose-600'}
                  />
               </div>
 
               <div className="space-y-3">
-                <h3 className="font-bold text-slate-300 uppercase text-xs tracking-widest">Zgłoś status "na żywo"</h3>
+                <h3 className="font-bold text-slate-800 text-sm uppercase tracking-wider">Zgłoś status "na żywo"</h3>
                 <div className="flex gap-2">
-                   <button className="flex-1 py-3 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-xl text-[10px] font-bold uppercase tracking-tighter hover:bg-emerald-500/20 transition-colors">
+                   <button className="flex-1 py-3 bg-slate-50 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold hover:bg-slate-100 transition-colors">
                      Brak
                    </button>
-                   <button className="flex-1 py-3 bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded-xl text-[10px] font-bold uppercase tracking-tighter hover:bg-amber-500/20 transition-colors">
+                   <button className="flex-1 py-3 bg-slate-50 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold hover:bg-slate-100 transition-colors">
                      Mała
                    </button>
-                   <button className="flex-1 py-3 bg-rose-500/10 text-rose-500 border border-rose-500/30 rounded-xl text-[10px] font-bold uppercase tracking-tighter hover:bg-rose-500/20 transition-colors">
+                   <button className="flex-1 py-3 bg-slate-50 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold hover:bg-slate-100 transition-colors">
                      Duża
                    </button>
                 </div>
               </div>
 
-              <button className="w-full py-4 bg-gradient-to-r from-[#ff00ff] to-[#7000ff] text-white rounded-2xl font-bold text-lg shadow-[0_0_20px_rgba(255,0,255,0.4)] hover:scale-[1.02] transition-transform active:scale-95 uppercase italic tracking-widest">
-                Nawiguj Teraz
+              <button className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold text-lg shadow-lg hover:bg-blue-700 transition-all active:scale-95 uppercase tracking-wide">
+                Nawiguj do myjni
               </button>
             </div>
           </div>
         )}
 
         {activeView === 'b2b' && (
-          <div className="p-6 space-y-6">
+          <div className="p-6 space-y-6 bg-slate-50 min-h-full">
             <div className="text-center space-y-2">
-              <div className="bg-[#00ffff]/20 w-20 h-20 rounded-full flex items-center justify-center mx-auto shadow-[0_0_20px_#00ffff]">
-                <Store className="w-10 h-10 text-[#00ffff]" />
+              <div className="bg-blue-100 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto shadow-sm">
+                <Store className="w-10 h-10 text-blue-600" />
               </div>
-              <h2 className="text-2xl font-bold uppercase italic text-neon-cyan">Strefa Biznesu</h2>
-              <p className="text-[#00ffff]/60 text-sm">Rozświetl swój biznes neonami AutoSpa.</p>
+              <h2 className="text-2xl font-bold text-slate-900">Panel Biznesowy</h2>
+              <p className="text-slate-500 text-sm">Zarządzaj swoją myjnią i przyciągnij klientów.</p>
             </div>
 
-            <div className="bg-[#1a0b2e] p-5 rounded-2xl shadow-lg border border-[#ff00ff]/20 space-y-4">
-               <h3 className="font-bold flex items-center gap-2 text-[#ff00ff] uppercase text-xs tracking-widest">
-                 <TrendingDown className="w-5 h-5" /> Aktywne Promocje
+            <div className="bg-white p-5 rounded-2xl shadow-premium border border-slate-100 space-y-4">
+               <h3 className="font-bold flex items-center gap-2 text-slate-800 text-sm uppercase tracking-wider">
+                 <TrendingDown className="w-5 h-5 text-amber-500" /> Twoje Promocje
                </h3>
-               <div className="p-4 bg-[#0d0221] rounded-xl border border-dashed border-[#ff00ff]/30 text-center">
-                 <p className="text-xs opacity-50 mb-2">Ciemno tutaj... dodaj blasku!</p>
-                 <button className="text-[#00ffff] text-xs font-bold uppercase tracking-widest underline decoration-[#00ffff]/30 underline-offset-4">+ Dodaj nową promocję</button>
+               <div className="p-4 bg-slate-50 rounded-xl border border-dashed border-slate-300 text-center">
+                 <p className="text-sm text-slate-400 mb-2">Brak aktywnych promocji</p>
+                 <button className="text-blue-600 text-sm font-bold hover:underline">+ Dodaj nową promocję</button>
                </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-               <div className="bg-[#ff00ff]/5 p-4 rounded-2xl border border-[#ff00ff]/20">
-                  <p className="text-[10px] text-[#ff00ff] font-bold uppercase tracking-widest opacity-70">Zasięg</p>
-                  <p className="text-2xl font-bold text-[#ff00ff]">1,248</p>
+               <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Wyświetlenia</p>
+                  <p className="text-2xl font-bold text-slate-900">1,248</p>
                </div>
-               <div className="bg-[#00ffff]/5 p-4 rounded-2xl border border-[#00ffff]/20">
-                  <p className="text-[10px] text-[#00ffff] font-bold uppercase tracking-widest opacity-70">Konwersja</p>
-                  <p className="text-2xl font-bold text-[#00ffff]">342</p>
+               <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Nawigacje</p>
+                  <p className="text-2xl font-bold text-slate-900">342</p>
                </div>
             </div>
 
-            <button className="w-full py-4 border-2 border-[#00ffff] text-[#00ffff] bg-transparent rounded-2xl font-bold uppercase italic tracking-widest shadow-[0_0_15px_rgba(0,255,255,0.2)] hover:bg-[#00ffff]/10 transition-colors">
-              Wykup Wyróżnienie
+            <button className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold uppercase tracking-wider shadow-lg hover:bg-black transition-colors">
+              Wykup wyróżnienie
             </button>
           </div>
         )}
       </main>
 
-      {/* Bottom Navigation (Synthwave Style) */}
-      <nav className="bg-[#1a0b2e] border-t border-[#ff00ff]/30 p-2 flex justify-around items-center z-30 shadow-[0_-4px_20px_rgba(0,0,0,0.5)]">
+      {/* Bottom Navigation (Premium Clean Style) */}
+      <nav className="bg-white border-t border-slate-100 p-2 flex justify-around items-center z-30 shadow-[0_-4px_15px_rgba(0,0,0,0.05)]">
         <NavButton 
           active={activeView === 'map'} 
           onClick={() => setActiveView('map')} 
@@ -294,10 +294,10 @@ function FilterChip({ active, onClick, label }: { active: boolean, onClick: () =
     <button 
       onClick={onClick}
       className={cn(
-        "px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all duration-300 border",
+        "px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 border",
         active 
-          ? "bg-[#ff00ff] text-white border-[#ff00ff] shadow-[0_0_15px_#ff00ff] scale-105" 
-          : "bg-[#1a0b2e] text-[#ff00ff]/60 border-[#ff00ff]/20 hover:border-[#ff00ff]/50"
+          ? "bg-white text-blue-600 border-white shadow-md scale-105" 
+          : "bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700"
       )}
     >
       {label}
@@ -310,17 +310,14 @@ function NavButton({ active, onClick, icon, label }: { active: boolean, onClick:
     <button 
       onClick={onClick}
       className={cn(
-        "flex flex-col items-center gap-1 p-2 px-4 transition-all duration-300 rounded-xl relative",
-        active ? "text-[#00ffff]" : "text-[#ff00ff]/40 hover:text-[#ff00ff]/70"
+        "flex flex-col items-center gap-1 p-2 px-4 transition-all duration-200 rounded-xl relative",
+        active ? "text-blue-600 bg-blue-50" : "text-slate-400 hover:text-slate-600 hover:bg-slate-50"
       )}
     >
-      {active && (
-        <div className="absolute inset-0 bg-[#00ffff]/10 blur-md rounded-xl"></div>
-      )}
       <div className={cn("transition-transform", active && "scale-110")}>
         {icon}
       </div>
-      <span className="text-[9px] font-bold uppercase tracking-[0.2em]">
+      <span className="text-[10px] font-bold uppercase tracking-tight">
         {label}
       </span>
     </button>
@@ -332,35 +329,35 @@ function CarWashCard({ wash, onClick }: { wash: CarWash, onClick: () => void }) 
     <div 
       onClick={onClick}
       className={cn(
-        "bg-[#1a0b2e] p-4 rounded-2xl shadow-lg border border-[#ff00ff]/10 flex gap-4 items-center active:scale-[0.98] transition-all cursor-pointer hover:border-[#ff00ff]/40 hover:shadow-[0_0_15px_rgba(255,0,255,0.1)]",
-        wash.isPromoted && "border-[#00ffff]/30 shadow-[0_0_10px_rgba(0,255,255,0.1)]"
+        "bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex gap-4 items-center active:scale-[0.98] transition-all cursor-pointer hover:shadow-md",
+        wash.isPromoted && "border-amber-200 bg-amber-50/30"
       )}
     >
       <div className={cn(
-        "w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 border",
-        wash.isPromoted ? "bg-[#00ffff]/10 border-[#00ffff]/30 text-[#00ffff]" : "bg-[#ff00ff]/10 border-[#ff00ff]/30 text-[#ff00ff]"
+        "w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 shadow-inner",
+        wash.isPromoted ? "bg-amber-100 text-amber-600" : "bg-blue-50 text-blue-600"
       )}>
         <Car className="w-7 h-7" />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex justify-between items-start">
-          <h3 className="font-bold text-white truncate italic uppercase tracking-tighter">{wash.name}</h3>
-          <div className="flex items-center gap-1 bg-[#0d0221] px-1.5 py-0.5 rounded-lg border border-[#00ffff]/20">
-            <Star className="w-3 h-3 fill-[#00ffff] text-[#00ffff]" />
-            <span className="text-[10px] font-bold text-[#00ffff]">{wash.rating}</span>
+          <h3 className="font-bold text-slate-800 truncate">{wash.name}</h3>
+          <div className="flex items-center gap-1 bg-slate-50 px-1.5 py-0.5 rounded-lg border border-slate-100">
+            <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+            <span className="text-[10px] font-bold text-slate-700">{wash.rating}</span>
           </div>
         </div>
-        <p className="text-[10px] text-slate-400 truncate mb-2 opacity-70">{wash.address}</p>
+        <p className="text-[10px] text-slate-500 truncate mb-2">{wash.address}</p>
         <div className="flex gap-2">
           <span className={cn(
-            "text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest border",
-            wash.queueStatus === 'brak' ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" : wash.queueStatus === 'mała' ? "bg-amber-500/10 text-amber-400 border-amber-500/30" : "bg-rose-500/10 text-rose-500 border-rose-500/30"
+            "text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider border",
+            wash.queueStatus === 'brak' ? "bg-emerald-50 text-emerald-700 border-emerald-100" : wash.queueStatus === 'mała' ? "bg-amber-50 text-amber-700 border-amber-100" : "bg-rose-50 text-rose-700 border-rose-100"
           )}>
             {wash.queueStatus}
           </span>
           {wash.isPromoted && (
-            <span className="text-[9px] font-bold px-2 py-0.5 rounded-full uppercase bg-[#00ffff] text-[#0d0221] shadow-[0_0_10px_#00ffff]">
-              PROMO
+            <span className="text-[9px] font-bold px-2 py-0.5 rounded-full uppercase bg-amber-500 text-white shadow-sm">
+              PROMOCJA
             </span>
           )}
         </div>
@@ -371,12 +368,12 @@ function CarWashCard({ wash, onClick }: { wash: CarWash, onClick: () => void }) 
 
 function StatusCard({ icon, label, value, color }: { icon: React.ReactNode, label: string, value: string, color: string }) {
   return (
-    <div className="bg-[#1a0b2e] p-4 rounded-2xl border border-[#ff00ff]/10 shadow-inner">
-      <div className="flex items-center gap-2 text-[#ff00ff]/40 mb-1">
+    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+      <div className="flex items-center gap-2 text-slate-400 mb-1">
         {icon}
-        <span className="text-[9px] font-bold uppercase tracking-widest">{label}</span>
+        <span className="text-[9px] font-bold uppercase tracking-wider">{label}</span>
       </div>
-      <p className={cn("text-sm font-bold uppercase italic tracking-tight", color)}>{value}</p>
+      <p className={cn("text-sm font-bold uppercase tracking-tight", color)}>{value}</p>
     </div>
   );
 }
