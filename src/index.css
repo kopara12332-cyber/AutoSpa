@@ -6,12 +6,12 @@
   width: 100%;
   height: 100%;
   z-index: 1;
-  background: #f1f5f9 !important;
+  background: #f5f3ff !important;
 }
 
-/* Premium Map Styles */
+/* Turbo Sunset Map Styles */
 .modern-map .leaflet-tile-container {
-  filter: saturate(1.1) contrast(1.05) brightness(1.02) !important;
+  filter: saturate(1.2) sepia(20%) contrast(1.1) !important;
 }
 
 .custom-div-icon {
@@ -23,7 +23,7 @@
   width: 36px;
   height: 36px;
   border-radius: 50% 50% 50% 0;
-  background: #1e40af; /* Deep Blue */
+  background: #f97316; /* Energetic Orange */
   position: absolute;
   transform: rotate(-45deg);
   left: 50%;
@@ -32,20 +32,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
   border: 2px solid white;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .marker-pin:hover {
-  transform: rotate(-45deg) scale(1.15);
-  background: #2563eb;
+  transform: rotate(-45deg) scale(1.2);
+  background: #ea580c;
 }
 
 .marker-pin.promoted {
-  background: #f59e0b; /* Premium Gold/Amber */
-  box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
-  animation: pulse-premium 2s infinite;
+  background: #fbbf24; /* Warm Yellow */
+  box-shadow: 0 0 15px rgba(251, 191, 36, 0.6);
+  animation: pulse-turbo 1.5s infinite;
 }
 
 .marker-icon-inner {
@@ -53,19 +53,27 @@
   color: white;
 }
 
-@keyframes pulse-premium {
-  0% { transform: rotate(-45deg) scale(1); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.5); }
-  70% { transform: rotate(-45deg) scale(1.1); box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
-  100% { transform: rotate(-45deg) scale(1); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+@keyframes pulse-turbo {
+  0% { transform: rotate(-45deg) scale(1); box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.6); }
+  70% { transform: rotate(-45deg) scale(1.1); box-shadow: 0 0 0 12px rgba(251, 191, 36, 0); }
+  100% { transform: rotate(-45deg) scale(1); box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); }
 }
 
-/* Premium Background & Utilities */
-.bg-premium-gradient {
-  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+/* Turbo Sunset Backgrounds & Gradients */
+.bg-sunset-gradient {
+  background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 100%);
 }
 
-.shadow-premium {
-  box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+.bg-orange-gradient {
+  background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+}
+
+.text-sunset-orange {
+  color: #f97316;
+}
+
+.shadow-turbo {
+  box-shadow: 0 10px 20px -5px rgba(76, 29, 149, 0.2);
 }
 
 .no-scrollbar::-webkit-scrollbar {
