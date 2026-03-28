@@ -1,12 +1,36 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Map as MapIcon, List, Search, Filter, Car, Star, Navigation, AlertCircle, TrendingDown, Store } from 'lucide-react';
 import { mockCarWashes } from './data';
 import type { CarWash, CarWashType } from './data';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import L from 'leaflet';
+
+// Leaflet icon fix
+import icon from 'leaflet/dist/images/marker-icon.png';
+import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+
+let DefaultIcon = L.icon({
+    iconUrl: icon,
+    shadowUrl: iconShadow,
+    iconSize: [25, 41],
+    iconAnchor: [12, 41]
+});
+
+L.Marker.prototype.options.icon = DefaultIcon;
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
+}
+
+// Map Updater Component to center map on selection
+function MapUpdater({ center }: { center: [number, number] }) {
+  const map = useMap();
+  useEffect(() => {
+    map.setView(center, map.getZoom());
+  }, [center, map]);
+  return null;
 }
 
 type View = 'map' | 'list' | 'b2b' | 'detail';
@@ -15,6 +39,7 @@ function App() {
   const [activeView, setActiveView] = useState<View>('map');
   const [selectedType, setSelectedType] = useState<CarWashType | 'all'>('all');
   const [selectedWash, setSelectedWash] = useState<CarWash | null>(null);
+  const [mapCenter, setMapCenter] = useState<[number, number]>([52.2297, 21.0122]);
 
   const filteredWashes = useMemo(() => {
     if (selectedType === 'all') return mockCarWashes;
@@ -22,6 +47,12 @@ function App() {
   }, [selectedType]);
 
   const handleWashClick = (wash: CarWash) => {
+    setSelectedWash(wash);
+    setMapCenter([wash.lat, wash.lng]);
+    setActiveView('detail');
+  };
+
+  const handleMarkerClick = (wash: CarWash) => {
     setSelectedWash(wash);
     setActiveView('detail');
   };
@@ -31,7 +62,7 @@ function App() {
       {/* App Header (Clean Web App Style) */}
       <header className="bg-blue-600 text-white p-4 shadow-lg z-20 flex flex-col gap-4">
         <div className="flex justify-between items-center px-2">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3" onClick={() => setActiveView('map')} style={{ cursor: 'pointer' }}>
              <div className="bg-white/20 p-2 rounded-xl">
                <Car className="w-6 h-6" />
              </div>
@@ -60,42 +91,37 @@ function App() {
       {/* Main Content Area */}
       <main className="flex-1 relative overflow-y-auto">
         {activeView === 'map' && (
-          <div className="h-full bg-slate-200 relative flex items-center justify-center">
-             {/* Mock Map Background */}
-             <div className="absolute inset-0 bg-slate-100 opacity-50 overflow-hidden">
-                <div className="absolute top-1/4 left-1/4 w-32 h-1 bg-slate-300 rotate-45"></div>
-                <div className="absolute top-1/2 left-1/3 w-48 h-1 bg-slate-300 -rotate-12"></div>
-                <div className="absolute top-2/3 right-1/4 w-40 h-1 bg-slate-300 rotate-90"></div>
-                <div className="absolute top-10 right-10 w-20 h-20 border-4 border-slate-300 rounded-full opacity-20"></div>
-             </div>
-             
-             {/* Map Pins */}
-             {filteredWashes.map((wash) => (
-               <div 
-                 key={wash.id} 
-                 className="absolute cursor-pointer transform -translate-x-1/2 -translate-y-1/2 transition-transform hover:scale-110"
-                 style={{ 
-                   top: `${(wash.lat - 52.2) * 500 + 50}%`, 
-                   left: `${(wash.lng - 21.0) * 500 + 50}%` 
-                 }}
-                 onClick={() => handleWashClick(wash)}
-               >
-                 <div className={cn(
-                   "p-2 rounded-full shadow-lg border-2 border-white",
-                   wash.isPromoted ? "bg-amber-500" : "bg-blue-600"
-                 )}>
-                   <Navigation className="w-5 h-5 text-white" />
-                 </div>
-                 {wash.isPromoted && (
-                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 whitespace-nowrap bg-amber-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm animate-bounce">
-                      PROMOCJA
+          <div className="h-full relative">
+            <MapContainer center={mapCenter} zoom={13} scrollWheelZoom={true} className="h-full w-full">
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              <MapUpdater center={mapCenter} />
+              {filteredWashes.map((wash) => (
+                <Marker 
+                  key={wash.id} 
+                  position={[wash.lat, wash.lng]}
+                  eventHandlers={{
+                    click: () => handleMarkerClick(wash),
+                  }}
+                >
+                  <Popup>
+                    <div className="p-1">
+                      <h3 className="font-bold text-sm">{wash.name}</h3>
+                      <p className="text-xs text-slate-500 mb-1">{wash.address}</p>
+                      <div className="flex items-center gap-1">
+                        <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                        <span className="text-xs font-bold">{wash.rating}</span>
+                      </div>
                     </div>
-                 )}
-               </div>
-             ))}
+                  </Popup>
+                </Marker>
+              ))}
+            </MapContainer>
 
-             <div className="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur p-3 rounded-xl shadow-lg text-sm text-slate-600 border border-slate-200">
-               Przesuwaj mapę, aby znaleźć myjnie w okolicy. Pomarańczowe punkty to oferty specjalne.
+             <div className="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur p-3 rounded-xl shadow-lg text-sm text-slate-600 border border-slate-200 z-[1000]">
+               Przesuwaj mapę, aby znaleźć myjnie w okolicy. Kliknij marker, aby zobaczyć szczegóły.
              </div>
           </div>
         )}
