@@ -94,7 +94,50 @@ function App() {
                 defaultZoom={13}
                 gestureHandling={'greedy'}
                 disableDefaultUI={true}
-                mapId={'bf51a910020fa566'} // Optional: Map ID for styling
+                mapId={'bf51a910020fa566'} // Map ID allows for advanced styling
+                styles={[
+                  {
+                    featureType: "poi.business",
+                    stylers: [{ visibility: "off" }],
+                  },
+                  {
+                    featureType: "poi.attraction",
+                    stylers: [{ visibility: "off" }],
+                  },
+                  {
+                    featureType: "poi.government",
+                    stylers: [{ visibility: "off" }],
+                  },
+                  {
+                    featureType: "poi.medical",
+                    stylers: [{ visibility: "off" }],
+                  },
+                  {
+                    featureType: "poi.park",
+                    elementType: "labels.text",
+                    stylers: [{ visibility: "off" }],
+                  },
+                  {
+                    featureType: "poi.place_of_ worship",
+                    stylers: [{ visibility: "off" }],
+                  },
+                  {
+                    featureType: "poi.school",
+                    stylers: [{ visibility: "off" }],
+                  },
+                  {
+                    featureType: "poi.sports_complex",
+                    stylers: [{ visibility: "off" }],
+                  },
+                  {
+                    featureType: "transit",
+                    stylers: [{ visibility: "simplified" }],
+                  },
+                  {
+                    featureType: "administrative.land_parcel",
+                    stylers: [{ visibility: "off" }],
+                  },
+                ]}
               >
                 <MapUpdater center={mapCenter} />
                 
