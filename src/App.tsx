@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Map as MapIcon, List, Search, Filter, Car, Star, Navigation, AlertCircle, TrendingDown, Store, LogIn, Mail, Lock, LogOut, Plus, CheckCircle2, MapPin, Info, ShieldCheck, XCircle, Edit3, Save } from 'lucide-react';
+import { Map as MapIcon, List, Search, Filter, Car, Star, Navigation, AlertCircle, TrendingDown, Store, LogIn, Mail, Lock, LogOut, Plus, CheckCircle2, MapPin, Info, ShieldCheck, XCircle, Edit3, Save, CreditCard, Clock, FileText, Settings } from 'lucide-react';
 import { mockCarWashes } from './data';
 import type { CarWash, CarWashType } from './data';
 import { clsx, type ClassValue } from 'clsx';
@@ -69,8 +69,7 @@ type View = 'map' | 'list' | 'b2b' | 'detail';
 const WASH_SPECS = {
   bezdotykowa: [
     'Aktywna piana', 'Mycie podwozia', 'Woskowanie na gorąco', 
-    'Nabłyszczanie', 'Odkurzacz', 'Kompresor', 
-    'Płatność kartą', 'Rozmieniarka', 'Uchwyty na dywaniki'
+    'Nabłyszczanie', 'Uchwyty na dywaniki'
   ],
   reczna: [
     'Mycie ręczne (gąbka)', 'Osuszanie ręczne', 'Woskowanie ręczne', 
@@ -84,6 +83,12 @@ const WASH_SPECS = {
   ]
 };
 
+const GLOBAL_SPECS = {
+  payment: ['Gotówka', 'Karta', 'Aplikacja', 'Żeton/Moneta', 'Google Pay'],
+  equipment: ['Odkurzacz', 'Kompresor', 'Rozmieniarka', 'Automat do kawy', 'Toaleta', 'Wi-Fi', 'Suszarka'],
+  hours: ['24/7', 'Tylko w dzień', 'Pon-Pt: 8:00-20:00']
+};
+
 function AddWashForm({ onCancel, onSuccess }: { onCancel: () => void, onSuccess: (wash: any) => void }) {
   const [formData, setFormData] = useState({
     name: '',
@@ -91,16 +96,20 @@ function AddWashForm({ onCancel, onSuccess }: { onCancel: () => void, onSuccess:
     type: 'bezdotykowa' as CarWashType,
     lat: 52.2297,
     lng: 21.0122,
-    services: [] as string[]
+    services: [] as string[],
+    payment: [] as string[],
+    equipment: [] as string[],
+    hours: '24/7',
+    description: ''
   });
   const [loading, setLoading] = useState(false);
 
-  const toggleService = (service: string) => {
+  const toggleItem = (field: 'services' | 'payment' | 'equipment', item: string) => {
     setFormData(prev => ({
       ...prev,
-      services: prev.services.includes(service)
-        ? prev.services.filter(s => s !== service)
-        : [...prev.services, service]
+      [field]: prev[field].includes(item)
+        ? prev[field].filter(s => s !== item)
+        : [...prev[field], item]
     }));
   };
 
@@ -135,70 +144,144 @@ function AddWashForm({ onCancel, onSuccess }: { onCancel: () => void, onSuccess:
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-4">
-          <div className="space-y-1">
-            <label className="text-[10px] font-black text-gold uppercase tracking-widest ml-1">Nazwa Myjni</label>
-            <input 
-              required
-              className="w-full bg-zinc-900 border-2 border-zinc-800 rounded-2xl py-3 px-4 text-white focus:border-gold outline-none"
-              placeholder="np. Golden Wash Premium"
-              value={formData.name}
-              onChange={e => setFormData({...formData, name: e.target.value})}
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-[10px] font-black text-gold uppercase tracking-widest ml-1">Adres</label>
-            <div className="relative">
-              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+          {/* Podstawowe dane */}
+          <div className="space-y-4 bg-zinc-900/50 p-4 rounded-3xl border border-white/5">
+            <h3 className="text-[10px] font-black text-gold uppercase tracking-[0.2em] mb-2 flex items-center gap-2"><Info className="w-3 h-3" /> Podstawowe dane</h3>
+            <div className="space-y-1">
+              <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-1">Nazwa Myjni</label>
               <input 
                 required
-                className="w-full bg-zinc-900 border-2 border-zinc-800 rounded-2xl py-3 pl-10 pr-4 text-white focus:border-gold outline-none"
-                placeholder="ul. Złota 44, Warszawa"
-                value={formData.address}
-                onChange={e => setFormData({...formData, address: e.target.value})}
+                className="w-full bg-black border-2 border-zinc-800 rounded-2xl py-3 px-4 text-white focus:border-gold outline-none text-sm"
+                placeholder="np. Golden Wash Premium"
+                value={formData.name}
+                onChange={e => setFormData({...formData, name: e.target.value})}
               />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-1">Adres</label>
+              <div className="relative">
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                <input 
+                  required
+                  className="w-full bg-black border-2 border-zinc-800 rounded-2xl py-3 pl-10 pr-4 text-white focus:border-gold outline-none text-sm"
+                  placeholder="ul. Złota 44, Warszawa"
+                  value={formData.address}
+                  onChange={e => setFormData({...formData, address: e.target.value})}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-1">Typ Usługi</label>
+              <div className="grid grid-cols-3 gap-2">
+                {(['bezdotykowa', 'reczna', 'autodetailing'] as CarWashType[]).map(t => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setFormData({...formData, type: t, services: []})}
+                    className={cn(
+                      "py-2 rounded-xl text-[8px] font-black uppercase transition-all border-2",
+                      formData.type === t ? "bg-luxury-gold text-black border-gold" : "bg-black text-gray-500 border-zinc-800"
+                    )}
+                  >
+                    {t === 'reczna' ? 'Ręczna' : t === 'bezdotykowa' ? 'Bezdotyk.' : 'Detailing'}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
-          <div className="space-y-1">
-            <label className="text-[10px] font-black text-gold uppercase tracking-widest ml-1">Typ Usługi</label>
+          {/* Godziny działania */}
+          <div className="space-y-4 bg-zinc-900/50 p-4 rounded-3xl border border-white/5">
+            <h3 className="text-[10px] font-black text-gold uppercase tracking-[0.2em] mb-2 flex items-center gap-2"><Clock className="w-3 h-3" /> Godziny działania</h3>
             <div className="grid grid-cols-3 gap-2">
-              {(['bezdotykowa', 'reczna', 'autodetailing'] as CarWashType[]).map(t => (
+              {GLOBAL_SPECS.hours.map(h => (
                 <button
-                  key={t}
+                  key={h}
                   type="button"
-                  onClick={() => setFormData({...formData, type: t, services: []})}
+                  onClick={() => setFormData({...formData, hours: h})}
                   className={cn(
-                    "py-2 rounded-xl text-[9px] font-black uppercase transition-all border-2",
-                    formData.type === t ? "bg-luxury-gold text-black border-gold" : "bg-zinc-900 text-gray-500 border-zinc-800"
+                    "py-2 px-1 rounded-xl text-[8px] font-black uppercase transition-all border-2",
+                    formData.hours === h ? "bg-gold/20 text-white border-gold" : "bg-black text-gray-500 border-zinc-800"
                   )}
                 >
-                  {t === 'reczna' ? 'Ręczna' : t === 'bezdotykowa' ? 'Bezdotyk.' : 'Detailing'}
+                  {h}
                 </button>
               ))}
             </div>
           </div>
-        </div>
 
-        <div className="space-y-3">
-          <label className="text-[10px] font-black text-gold uppercase tracking-widest ml-1 flex items-center gap-2">
-            <Info className="w-3 h-3" /> Wyposażenie / Usługi
-          </label>
-          <div className="grid grid-cols-1 gap-2">
-            {WASH_SPECS[formData.type].map(service => (
-              <button
-                key={service}
-                type="button"
-                onClick={() => toggleService(service)}
-                className={cn(
-                  "flex items-center justify-between p-3 rounded-2xl border-2 transition-all",
-                  formData.services.includes(service) ? "bg-gold/10 border-gold text-white" : "bg-zinc-900/50 border-zinc-800 text-gray-500"
-                )}
-              >
-                <span className="text-xs font-bold">{service}</span>
-                {formData.services.includes(service) && <CheckCircle2 className="w-4 h-4 text-gold" />}
-              </button>
-            ))}
+          {/* Płatność */}
+          <div className="space-y-4 bg-zinc-900/50 p-4 rounded-3xl border border-white/5">
+            <h3 className="text-[10px] font-black text-gold uppercase tracking-[0.2em] mb-2 flex items-center gap-2"><CreditCard className="w-3 h-3" /> Płatność</h3>
+            <div className="flex flex-wrap gap-2">
+              {GLOBAL_SPECS.payment.map(p => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => toggleItem('payment', p)}
+                  className={cn(
+                    "px-4 py-2 rounded-xl text-[8px] font-black uppercase transition-all border-2",
+                    formData.payment.includes(p) ? "bg-gold/20 text-white border-gold" : "bg-black text-gray-500 border-zinc-800"
+                  )}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Wyposażenie */}
+          <div className="space-y-4 bg-zinc-900/50 p-4 rounded-3xl border border-white/5">
+            <h3 className="text-[10px] font-black text-gold uppercase tracking-[0.2em] mb-2 flex items-center gap-2"><Settings className="w-3 h-3" /> Wyposażenie</h3>
+            <div className="flex flex-wrap gap-2">
+              {GLOBAL_SPECS.equipment.map(e => (
+                <button
+                  key={e}
+                  type="button"
+                  onClick={() => toggleItem('equipment', e)}
+                  className={cn(
+                    "px-4 py-2 rounded-xl text-[8px] font-black uppercase transition-all border-2",
+                    formData.equipment.includes(e) ? "bg-gold/20 text-white border-gold" : "bg-black text-gray-500 border-zinc-800"
+                  )}
+                >
+                  {e}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Usługi specyficzne */}
+          <div className="space-y-4 bg-zinc-900/50 p-4 rounded-3xl border border-white/5">
+            <h3 className="text-[10px] font-black text-gold uppercase tracking-[0.2em] mb-2 flex items-center gap-2"><Plus className="w-3 h-3" /> Usługi {formData.type}</h3>
+            <div className="grid grid-cols-1 gap-2">
+              {WASH_SPECS[formData.type].map(service => (
+                <button
+                  key={service}
+                  type="button"
+                  onClick={() => toggleItem('services', service)}
+                  className={cn(
+                    "flex items-center justify-between p-3 rounded-2xl border-2 transition-all",
+                    formData.services.includes(service) ? "bg-gold/10 border-gold text-white" : "bg-black/50 border-zinc-800 text-gray-500"
+                  )}
+                >
+                  <span className="text-xs font-bold">{service}</span>
+                  {formData.services.includes(service) && <CheckCircle2 className="w-4 h-4 text-gold" />}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Opis dodatkowy */}
+          <div className="space-y-4 bg-zinc-900/50 p-4 rounded-3xl border border-white/5">
+            <h3 className="text-[10px] font-black text-gold uppercase tracking-[0.2em] mb-2 flex items-center gap-2"><FileText className="w-3 h-3" /> Opis / Dodatkowe info</h3>
+            <textarea 
+              className="w-full bg-black border-2 border-zinc-800 rounded-2xl py-3 px-4 text-white focus:border-gold outline-none text-sm min-h-[100px] resize-none"
+              placeholder="Tutaj możesz dopisać wszystko co ważne..."
+              value={formData.description}
+              onChange={e => setFormData({...formData, description: e.target.value})}
+            />
           </div>
         </div>
 
@@ -207,7 +290,7 @@ function AddWashForm({ onCancel, onSuccess }: { onCancel: () => void, onSuccess:
           type="submit"
           className="w-full py-4 bg-luxury-gold text-black rounded-2xl font-black text-lg shadow-lg hover:scale-[1.02] active:scale-95 transition-all uppercase italic tracking-widest"
         >
-          {loading ? 'Zapisywanie...' : 'Dodaj moją myjnię'}
+          {loading ? 'Zapisywanie...' : 'Wyślij do akceptacji'}
         </button>
       </form>
     </div>
@@ -369,12 +452,12 @@ function AdminPanel({ submissions, onAccept, onReject, onUpdate, onBack }: { sub
     setEditData(null);
   };
 
-  const toggleService = (service: string) => {
+  const toggleItem = (field: 'services' | 'payment' | 'equipment', item: string) => {
     setEditData((prev: any) => ({
       ...prev,
-      services: prev.services.includes(service)
-        ? prev.services.filter((s: string) => s !== service)
-        : [...prev.services, service]
+      [field]: prev[field].includes(item)
+        ? prev[field].filter((s: string) => s !== item)
+        : [...prev[field], item]
     }));
   };
 
@@ -390,7 +473,7 @@ function AdminPanel({ submissions, onAccept, onReject, onUpdate, onBack }: { sub
       <div className="space-y-4">
         {editingId && editData ? (
           <form onSubmit={handleSaveEdit} className="bg-zinc-900 border-2 border-gold/30 p-6 rounded-3xl space-y-6 animate-in slide-in-from-right-4 duration-300">
-            <div className="space-y-4">
+            <div className="space-y-4 h-[60vh] overflow-y-auto pr-2 no-scrollbar">
               <div className="space-y-1">
                 <label className="text-[10px] font-black text-gold uppercase tracking-widest">Nazwa Myjni</label>
                 <input 
@@ -407,16 +490,74 @@ function AdminPanel({ submissions, onAccept, onReject, onUpdate, onBack }: { sub
                   onChange={e => setEditData({...editData, address: e.target.value})}
                 />
               </div>
+
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-gold uppercase tracking-widest">Usługi ({editData.type})</label>
+                <label className="text-[10px] font-black text-gold uppercase tracking-widest">Godziny</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {GLOBAL_SPECS.hours.map(h => (
+                    <button
+                      key={h}
+                      type="button"
+                      onClick={() => setEditData({...editData, hours: h})}
+                      className={cn(
+                        "py-2 px-1 rounded-xl text-[8px] font-black uppercase border-2 transition-all",
+                        editData.hours === h ? "bg-gold/20 text-white border-gold" : "bg-black text-gray-500 border-zinc-800"
+                      )}
+                    >
+                      {h}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-gold uppercase tracking-widest">Płatność</label>
+                <div className="flex flex-wrap gap-2">
+                  {GLOBAL_SPECS.payment.map(p => (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => toggleItem('payment', p)}
+                      className={cn(
+                        "px-3 py-1.5 rounded-full text-[8px] font-black uppercase border transition-all",
+                        editData.payment?.includes(p) ? "bg-gold text-black border-gold" : "bg-black text-gray-500 border-zinc-800"
+                      )}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-gold uppercase tracking-widest">Wyposażenie</label>
+                <div className="flex flex-wrap gap-2">
+                  {GLOBAL_SPECS.equipment.map(e => (
+                    <button
+                      key={e}
+                      type="button"
+                      onClick={() => toggleItem('equipment', e)}
+                      className={cn(
+                        "px-3 py-1.5 rounded-full text-[8px] font-black uppercase border transition-all",
+                        editData.equipment?.includes(e) ? "bg-gold text-black border-gold" : "bg-black text-gray-500 border-zinc-800"
+                      )}
+                    >
+                      {e}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-gold uppercase tracking-widest">Usługi {editData.type}</label>
                 <div className="flex flex-wrap gap-2">
                   {WASH_SPECS[editData.type as CarWashType].map((service: string) => (
                     <button
                       key={service}
                       type="button"
-                      onClick={() => toggleService(service)}
+                      onClick={() => toggleItem('services', service)}
                       className={cn(
-                        "text-[9px] px-3 py-1.5 rounded-full font-bold uppercase transition-all border",
+                        "px-3 py-1.5 rounded-full font-bold text-[8px] uppercase transition-all border",
                         editData.services.includes(service) ? "bg-gold text-black border-gold" : "bg-black text-gray-500 border-zinc-800"
                       )}
                     >
@@ -424,6 +565,15 @@ function AdminPanel({ submissions, onAccept, onReject, onUpdate, onBack }: { sub
                     </button>
                   ))}
                 </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-gold uppercase tracking-widest">Opis</label>
+                <textarea 
+                  className="w-full bg-black border border-zinc-800 rounded-xl py-3 px-4 text-white focus:border-gold outline-none text-xs min-h-[80px]"
+                  value={editData.description}
+                  onChange={e => setEditData({...editData, description: e.target.value})}
+                />
               </div>
             </div>
             <div className="flex gap-3">
@@ -449,9 +599,12 @@ function AdminPanel({ submissions, onAccept, onReject, onUpdate, onBack }: { sub
               </div>
               
               <div className="flex flex-wrap gap-1">
-                {sub.services.map((s: string) => (
+                {[...(sub.payment || []), ...(sub.equipment || []), ...(sub.services || [])].slice(0, 6).map((s: string) => (
                   <span key={s} className="text-[8px] bg-black text-gray-400 px-2 py-0.5 rounded-md">{s}</span>
                 ))}
+                {([...(sub.payment || []), ...(sub.equipment || []), ...(sub.services || [])].length > 6) && (
+                  <span className="text-[8px] text-gray-600">...</span>
+                )}
               </div>
 
               <div className="flex gap-2 pt-2 border-t border-white/5">
@@ -720,6 +873,56 @@ function App() {
               <button className="w-full py-4 bg-luxury-gold text-black rounded-2xl font-black text-lg shadow-lg shadow-gold/20 hover:scale-[1.02] active:scale-95 uppercase italic tracking-[0.1em] transition-all">
                 Nawiguj Teraz
               </button>
+
+              <div className="space-y-6 pt-4 border-t border-white/10">
+                {selectedWash.hours && (
+                  <div className="flex items-start gap-3">
+                    <Clock className="w-5 h-5 text-gold flex-shrink-0" />
+                    <div>
+                      <h4 className="text-[10px] font-black text-gold uppercase tracking-widest">Godziny działania</h4>
+                      <p className="text-sm text-gray-300 font-medium">{selectedWash.hours}</p>
+                    </div>
+                  </div>
+                )}
+
+                {selectedWash.payment && selectedWash.payment.length > 0 && (
+                  <div className="flex items-start gap-3">
+                    <CreditCard className="w-5 h-5 text-gold flex-shrink-0" />
+                    <div>
+                      <h4 className="text-[10px] font-black text-gold uppercase tracking-widest">Płatność</h4>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {selectedWash.payment.map(p => (
+                          <span key={p} className="text-[10px] bg-zinc-900 border border-white/5 px-2 py-0.5 rounded-lg text-gray-400">{p}</span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {(selectedWash.equipment?.length || selectedWash.services?.length) && (
+                  <div className="flex items-start gap-3">
+                    <Settings className="w-5 h-5 text-gold flex-shrink-0" />
+                    <div>
+                      <h4 className="text-[10px] font-black text-gold uppercase tracking-widest">Wyposażenie i Usługi</h4>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {[...(selectedWash.equipment || []), ...(selectedWash.services || [])].map(item => (
+                          <span key={item} className="text-[10px] bg-zinc-900 border border-white/5 px-2 py-0.5 rounded-lg text-gray-400">{item}</span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {selectedWash.description && (
+                  <div className="flex items-start gap-3">
+                    <FileText className="w-5 h-5 text-gold flex-shrink-0" />
+                    <div>
+                      <h4 className="text-[10px] font-black text-gold uppercase tracking-widest">Dodatkowe informacje</h4>
+                      <p className="text-sm text-gray-400 leading-relaxed italic">{selectedWash.description}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}

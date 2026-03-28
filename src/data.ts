@@ -14,6 +14,11 @@ export interface CarWash {
   hasActiveFoam: boolean;
   isPromoted?: boolean;
   promotionText?: string;
+  payment?: string[];
+  equipment?: string[];
+  hours?: string;
+  description?: string;
+  services?: string[];
 }
 
 export const mockCarWashes: CarWash[] = [
