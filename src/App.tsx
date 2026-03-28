@@ -7,8 +7,7 @@ import { twMerge } from 'tailwind-merge';
 import { 
   APIProvider, 
   Map, 
-  AdvancedMarker, 
-  Pin, 
+  Marker, 
   InfoWindow,
   useMap
 } from '@vis.gl/react-google-maps';
@@ -86,15 +85,19 @@ function App() {
       {/* Main Content Area */}
       <main className="flex-1 relative overflow-y-auto">
         {activeView === 'map' && (
-          <div className="h-full relative">
-            <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}>
+          <div className="h-full relative bg-slate-100 flex items-center justify-center overflow-hidden">
+            <APIProvider 
+              apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
+              onLoad={() => console.log('Google Maps Loaded')}
+              onError={(err) => console.error('Google Maps Load Error:', err)}
+            >
               <Map
                 style={{width: '100%', height: '100%'}}
                 defaultCenter={mapCenter}
                 defaultZoom={13}
                 gestureHandling={'greedy'}
                 disableDefaultUI={true}
-                mapId={'bf51a910020fa566'} // Map ID allows for advanced styling
+                // Removed mapId for better compatibility
                 styles={[
                   {
                     featureType: "poi.business",
@@ -142,22 +145,24 @@ function App() {
                 <MapUpdater center={mapCenter} />
                 
                 {filteredWashes.map((wash) => (
-                  <AdvancedMarker
+                  <Marker
                     key={wash.id}
                     position={{lat: wash.lat, lng: wash.lng}}
                     onClick={() => handleMarkerClick(wash)}
+                  />
+                ))}
+
+                {infoWindowShown && (
+                  <InfoWindow
+                    position={{
+                      lat: filteredWashes.find(w => w.id === infoWindowShown)?.lat || 0,
+                      lng: filteredWashes.find(w => w.id === infoWindowShown)?.lng || 0
+                    }}
+                    onCloseClick={() => setInfoWindowShown(null)}
                   >
-                    <Pin 
-                      background={wash.isPromoted ? '#f59e0b' : '#2563eb'} 
-                      glyphColor={'#fff'} 
-                      borderColor={'#fff'} 
-                    />
-                    
-                    {infoWindowShown === wash.id && (
-                      <InfoWindow
-                        position={{lat: wash.lat, lng: wash.lng}}
-                        onCloseClick={() => setInfoWindowShown(null)}
-                      >
+                    {(() => {
+                      const wash = filteredWashes.find(w => w.id === infoWindowShown);
+                      return wash ? (
                         <div className="p-1 min-w-[120px]">
                           <h3 className="font-bold text-sm text-slate-900">{wash.name}</h3>
                           <p className="text-[10px] text-slate-500 mb-2">{wash.address}</p>
@@ -171,10 +176,10 @@ function App() {
                             Szczegóły
                           </button>
                         </div>
-                      </InfoWindow>
-                    )}
-                  </AdvancedMarker>
-                ))}
+                      ) : null;
+                    })()}
+                  </InfoWindow>
+                )}
               </Map>
             </APIProvider>
 
