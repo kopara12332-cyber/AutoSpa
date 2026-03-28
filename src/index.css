@@ -23,7 +23,7 @@
   width: 36px;
   height: 36px;
   border-radius: 50% 50% 50% 0;
-  background: #D4AF37; /* Gold */
+  background: #D4AF37; /* Default Gold */
   position: absolute;
   transform: rotate(-45deg);
   left: 50%;
@@ -37,10 +37,26 @@
   transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
+/* Category Specific Markers */
+.marker-pin.bezdotykowa {
+  background: #D4AF37; /* Gold */
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+}
+
+.marker-pin.reczna {
+  background: #C0C0C0; /* Silver */
+  box-shadow: 0 4px 12px rgba(192, 192, 192, 0.3);
+}
+
+.marker-pin.autodetailing {
+  background: #FFFFFF; /* White/Diamond */
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+}
+
 .marker-pin:hover {
   transform: rotate(-45deg) scale(1.2);
-  background: #FFD700;
-  box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+  filter: brightness(1.2);
+  z-index: 1000;
 }
 
 .marker-pin.promoted {

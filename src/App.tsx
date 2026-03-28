@@ -20,13 +20,26 @@ let DefaultIcon = L.icon({
 
 L.Marker.prototype.options.icon = DefaultIcon;
 
-const createCustomIcon = (isPromoted: boolean) => {
+const createCustomIcon = (type: CarWashType, isPromoted: boolean) => {
+  const getIcon = () => {
+    switch (type) {
+      case 'bezdotykowa':
+        return `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>`;
+      case 'reczna':
+        return `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 11V7a5 5 0 0 1 10 0v4"/><path d="M5 18h14"/><path d="M5 22h14"/><rect width="18" height="7" x="3" y="11" rx="2"/></svg>`;
+      case 'autodetailing':
+        return `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>`;
+      default:
+        return `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>`;
+    }
+  };
+
   return L.divIcon({
     className: 'custom-div-icon',
     html: `
-      <div class="marker-pin ${isPromoted ? 'promoted' : ''}">
+      <div class="marker-pin ${type} ${isPromoted ? 'promoted' : ''}">
         <div class="marker-icon-inner">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>
+          ${getIcon()}
         </div>
       </div>
     `,
@@ -118,7 +131,7 @@ function App() {
                 <Marker 
                   key={wash.id} 
                   position={[wash.lat, wash.lng]}
-                  icon={createCustomIcon(!!wash.isPromoted)}
+                  icon={createCustomIcon(wash.type, !!wash.isPromoted)}
                   eventHandlers={{
                     click: () => handleMarkerClick(wash),
                   }}
@@ -137,8 +150,25 @@ function App() {
               ))}
             </MapContainer>
 
-             <div className="absolute bottom-4 left-4 right-4 bg-black/90 backdrop-blur p-3 rounded-xl shadow-gold text-xs text-white border border-gold/30 z-[1000] font-medium">
-               Znajdź myjnię w okolicy. <span className="text-gold font-bold">Złote punkty</span> to luksusowe oferty!
+             <div className="absolute bottom-4 left-4 right-4 bg-black/90 backdrop-blur p-3 rounded-xl shadow-gold z-[1000] border border-gold/30">
+               <div className="flex justify-between items-center mb-2">
+                 <span className="text-[10px] font-bold text-gold uppercase tracking-wider">Legenda:</span>
+                 <span className="text-[10px] text-white/60">Pulsujące = Promocja</span>
+               </div>
+               <div className="flex justify-around gap-2">
+                 <div className="flex items-center gap-1.5">
+                   <div className="w-3 h-3 rounded-full bg-[#D4AF37] border border-black shadow-[0_0_5px_rgba(212,175,55,0.5)]"></div>
+                   <span className="text-[9px] text-white font-medium">Bezdotyk.</span>
+                 </div>
+                 <div className="flex items-center gap-1.5">
+                   <div className="w-3 h-3 rounded-full bg-[#C0C0C0] border border-black shadow-[0_0_5px_rgba(192,192,192,0.5)]"></div>
+                   <span className="text-[9px] text-white font-medium">Ręczna</span>
+                 </div>
+                 <div className="flex items-center gap-1.5">
+                   <div className="w-3 h-3 rounded-full bg-[#FFFFFF] border border-black shadow-[0_0_5px_rgba(255,255,255,0.5)]"></div>
+                   <span className="text-[9px] text-white font-medium">Detailing</span>
+                 </div>
+               </div>
              </div>
           </div>
         )}
