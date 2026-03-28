@@ -17,6 +17,14 @@ export interface CarWash {
   payment?: string[];
   equipment?: string[];
   hours?: string;
+  openingHours?: {
+    days: string[];
+    open: string;
+    close: string;
+    is24h: boolean;
+  };
+  phone?: string;
+  isPhoneVisible?: boolean;
   description?: string;
   services?: string[];
 }

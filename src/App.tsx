@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Map as MapIcon, List, Search, Filter, Car, Star, Navigation, AlertCircle, TrendingDown, Store, LogIn, Mail, Lock, LogOut, Plus, CheckCircle2, MapPin, Info, ShieldCheck, XCircle, Edit3, Save, CreditCard, Clock, FileText, Settings } from 'lucide-react';
+import { Map as MapIcon, List, Search, Filter, Car, Star, Navigation, AlertCircle, TrendingDown, Store, LogIn, Mail, Lock, LogOut, Plus, CheckCircle2, MapPin, Info, ShieldCheck, XCircle, Edit3, Save, CreditCard, Clock, FileText, Settings, Phone, Eye, EyeOff } from 'lucide-react';
 import { mockCarWashes } from './data';
 import type { CarWash, CarWashType } from './data';
 import { clsx, type ClassValue } from 'clsx';
@@ -67,7 +67,7 @@ function MapUpdater({ center }: { center: [number, number] }) {
 type View = 'map' | 'list' | 'b2b' | 'detail';
 
 const WASH_SPECS = {
-  bezdotykowa: [
+  reczna: [
     'Aktywna piana (Turbo)', 'Mycie wstępne (gorąca woda)', 'Mycie zasadnicze (mikroproszek)',
     'Spłukiwanie (woda sieciowa)', 'Woskowanie nanopolimerem / Hydrowosk', 'Nabłyszczanie (Osmoza)',
     'Mycie podwozia (automat)', 'Oprysk felg / Chemia do felg', 'Szczotka z pianą (miękka)', 
@@ -75,7 +75,7 @@ const WASH_SPECS = {
     'Turbopiana (bardzo gęsta)', 'Program "Stop" (pauza)', 'Stanowisko SUV/Bus/Kamper',
     'Uchwyty na dywaniki (klamry)', 'Oświetlenie nocne LED', 'Zadaszenie stanowisk'
   ],
-  reczna: [
+  bezdotykowa: [
     'Mycie ręczne (na dwa wiadra)', 'Mycie detailingowe (pędzelkowanie)', 'Mycie silnika (góra/dół)',
     'Mycie podwozia (podnośnik)', 'Osuszanie ręczne (mikrofibra)', 'Osuszanie sprężonym powietrzem',
     'Glinkowanie karoserii', 'Dekontaminacja (usuwanie smoły/asfaltu)', 'Deironizacja felg (krwawa felga)',
@@ -128,7 +128,14 @@ function AddWashForm({ onCancel, onSuccess }: { onCancel: () => void, onSuccess:
     services: [] as string[],
     payment: [] as string[],
     equipment: [] as string[],
-    hours: '24/7',
+    openingHours: {
+      days: [] as string[],
+      open: '08:00',
+      close: '20:00',
+      is24h: true
+    },
+    phone: '',
+    isPhoneVisible: true,
     description: ''
   });
   const [loading, setLoading] = useState(false);
@@ -145,9 +152,20 @@ function AddWashForm({ onCancel, onSuccess }: { onCancel: () => void, onSuccess:
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    let hoursText = '';
+    if (formData.openingHours.is24h) {
+      hoursText = '24/7 (Całodobowo)';
+    } else if (formData.openingHours.days.length > 0) {
+      const days = formData.openingHours.days.join(', ');
+      hoursText = `${days}: ${formData.openingHours.open}-${formData.openingHours.close}`;
+    } else {
+      hoursText = 'Brak danych o godzinach';
+    }
     
     const newSubmission = {
       ...formData,
+      hours: hoursText,
       id: Math.random().toString(36).substr(2, 9),
       rating: 5.0,
       isQueue: false,
@@ -219,26 +237,108 @@ function AddWashForm({ onCancel, onSuccess }: { onCancel: () => void, onSuccess:
                 ))}
               </div>
             </div>
+
+            <div className="space-y-1">
+              <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-1">Numer Telefonu</label>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                  <input 
+                    className="w-full bg-black border-2 border-zinc-800 rounded-2xl py-3 pl-10 pr-4 text-white focus:border-gold outline-none text-sm"
+                    placeholder="+48 000 000 000"
+                    type="tel"
+                    value={formData.phone}
+                    onChange={e => setFormData({...formData, phone: e.target.value})}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setFormData({...formData, isPhoneVisible: !formData.isPhoneVisible})}
+                  className={cn(
+                    "px-4 rounded-2xl border-2 transition-all flex items-center gap-2 text-[8px] font-black uppercase",
+                    formData.isPhoneVisible ? "bg-gold/20 border-gold text-gold" : "bg-zinc-900 border-zinc-800 text-gray-500"
+                  )}
+                >
+                  {formData.isPhoneVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                  {formData.isPhoneVisible ? 'Widoczny' : 'Ukryty'}
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* Godziny działania */}
           <div className="space-y-4 bg-zinc-900/50 p-4 rounded-3xl border border-white/5">
             <h3 className="text-[10px] font-black text-gold uppercase tracking-[0.2em] mb-2 flex items-center gap-2"><Clock className="w-3 h-3" /> Godziny działania</h3>
-            <div className="grid grid-cols-3 gap-2">
-              {GLOBAL_SPECS.hours.map(h => (
-                <button
-                  key={h}
-                  type="button"
-                  onClick={() => setFormData({...formData, hours: h})}
-                  className={cn(
-                    "py-2 px-1 rounded-xl text-[8px] font-black uppercase transition-all border-2",
-                    formData.hours === h ? "bg-gold/20 text-white border-gold" : "bg-black text-gray-500 border-zinc-800"
-                  )}
-                >
-                  {h}
-                </button>
-              ))}
+            
+            <div className="flex items-center justify-between mb-4 bg-black/40 p-3 rounded-2xl border border-white/5">
+              <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Całodobowo (24/7)</span>
+              <button
+                type="button"
+                onClick={() => setFormData(prev => ({ ...prev, openingHours: { ...prev.openingHours, is24h: !prev.openingHours.is24h } }))}
+                className={cn(
+                  "w-12 h-6 rounded-full transition-all relative border-2",
+                  formData.openingHours.is24h ? "bg-gold border-gold" : "bg-zinc-800 border-zinc-700"
+                )}
+              >
+                <div className={cn(
+                  "absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full transition-all shadow-sm",
+                  formData.openingHours.is24h ? "right-1" : "left-1"
+                )} />
+              </button>
             </div>
+
+            {!formData.openingHours.is24h && (
+              <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-1">Dni tygodnia</label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {['Pon-Pt', 'Sobota', 'Niedziela', 'Codziennie'].map(day => (
+                      <button
+                        key={day}
+                        type="button"
+                        onClick={() => {
+                          let newDays = [...formData.openingHours.days];
+                          if (day === 'Codziennie') {
+                            newDays = newDays.includes('Codziennie') ? [] : ['Codziennie'];
+                          } else {
+                            newDays = newDays.filter(d => d !== 'Codziennie');
+                            newDays = newDays.includes(day) ? newDays.filter(d => d !== day) : [...newDays, day];
+                          }
+                          setFormData(prev => ({ ...prev, openingHours: { ...prev.openingHours, days: newDays } }));
+                        }}
+                        className={cn(
+                          "py-2 rounded-xl text-[8px] font-black uppercase transition-all border-2",
+                          formData.openingHours.days.includes(day) ? "bg-gold/20 text-white border-gold" : "bg-black text-gray-500 border-zinc-800"
+                        )}
+                      >
+                        {day}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-1">Od godziny</label>
+                    <input 
+                      type="time"
+                      className="w-full bg-black border-2 border-zinc-800 rounded-2xl py-3 px-4 text-white focus:border-gold outline-none text-sm"
+                      value={formData.openingHours.open}
+                      onChange={e => setFormData(prev => ({ ...prev, openingHours: { ...prev.openingHours, open: e.target.value } }))}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-1">Do godziny</label>
+                    <input 
+                      type="time"
+                      className="w-full bg-black border-2 border-zinc-800 rounded-2xl py-3 px-4 text-white focus:border-gold outline-none text-sm"
+                      value={formData.openingHours.close}
+                      onChange={e => setFormData(prev => ({ ...prev, openingHours: { ...prev.openingHours, close: e.target.value } }))}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Płatność */}
@@ -521,22 +621,89 @@ function AdminPanel({ submissions, onAccept, onReject, onUpdate, onBack }: { sub
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-gold uppercase tracking-widest">Godziny</label>
-                <div className="grid grid-cols-2 gap-2">
-                  {GLOBAL_SPECS.hours.map(h => (
-                    <button
-                      key={h}
-                      type="button"
-                      onClick={() => setEditData({...editData, hours: h})}
-                      className={cn(
-                        "py-2 px-1 rounded-xl text-[8px] font-black uppercase border-2 transition-all",
-                        editData.hours === h ? "bg-gold/20 text-white border-gold" : "bg-black text-gray-500 border-zinc-800"
-                      )}
-                    >
-                      {h}
-                    </button>
-                  ))}
+                <label className="text-[10px] font-black text-gold uppercase tracking-widest">Telefon i Widoczność</label>
+                <div className="flex gap-2">
+                  <input 
+                    className="flex-1 bg-black border border-zinc-800 rounded-xl py-3 px-4 text-white focus:border-gold outline-none"
+                    value={editData.phone || ''}
+                    placeholder="+48 000 000 000"
+                    onChange={e => setEditData({...editData, phone: e.target.value})}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setEditData({...editData, isPhoneVisible: !editData.isPhoneVisible})}
+                    className={cn(
+                      "px-3 py-1 rounded-xl border transition-all text-[8px] font-black uppercase",
+                      editData.isPhoneVisible ? "bg-gold text-black border-gold" : "bg-black text-gray-500 border-zinc-800"
+                    )}
+                  >
+                    {editData.isPhoneVisible ? 'Widoczny' : 'Ukryty'}
+                  </button>
                 </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-gold uppercase tracking-widest">Godziny i Dni</label>
+                <div className="flex items-center justify-between mb-4 bg-black/40 p-3 rounded-2xl border border-white/5">
+                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Całodobowo (24/7)</span>
+                  <button
+                    type="button"
+                    onClick={() => setEditData((prev: any) => ({ ...prev, openingHours: { ...(prev.openingHours || { days: [], open: '08:00', close: '20:00' }), is24h: !prev.openingHours?.is24h } }))}
+                    className={cn(
+                      "w-10 h-5 rounded-full transition-all relative border-2",
+                      editData.openingHours?.is24h ? "bg-gold border-gold" : "bg-zinc-800 border-zinc-700"
+                    )}
+                  >
+                    <div className={cn(
+                      "absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full transition-all shadow-sm",
+                      editData.openingHours?.is24h ? "right-1" : "left-1"
+                    )} />
+                  </button>
+                </div>
+
+                {!editData.openingHours?.is24h && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-4 gap-2">
+                      {['Pon-Pt', 'Sobota', 'Niedziela', 'Codziennie'].map(day => (
+                        <button
+                          key={day}
+                          type="button"
+                          onClick={() => {
+                            const currentHours = editData.openingHours || { days: [], open: '08:00', close: '20:00', is24h: false };
+                            let newDays = [...(currentHours.days || [])];
+                            if (day === 'Codziennie') {
+                              newDays = newDays.includes('Codziennie') ? [] : ['Codziennie'];
+                            } else {
+                              newDays = newDays.filter(d => d !== 'Codziennie');
+                              newDays = newDays.includes(day) ? newDays.filter(d => d !== day) : [...newDays, day];
+                            }
+                            setEditData({ ...editData, openingHours: { ...currentHours, days: newDays } });
+                          }}
+                          className={cn(
+                            "py-2 rounded-xl text-[8px] font-black uppercase border-2 transition-all",
+                            editData.openingHours?.days?.includes(day) ? "bg-gold/20 text-white border-gold" : "bg-black text-gray-500 border-zinc-800"
+                          )}
+                        >
+                          {day}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <input 
+                        type="time"
+                        className="bg-black border border-zinc-800 rounded-xl py-2 px-3 text-white focus:border-gold outline-none text-xs"
+                        value={editData.openingHours?.open || '08:00'}
+                        onChange={e => setEditData({ ...editData, openingHours: { ...(editData.openingHours || {}), open: e.target.value } })}
+                      />
+                      <input 
+                        type="time"
+                        className="bg-black border border-zinc-800 rounded-xl py-2 px-3 text-white focus:border-gold outline-none text-xs"
+                        value={editData.openingHours?.close || '20:00'}
+                        onChange={e => setEditData({ ...editData, openingHours: { ...(editData.openingHours || {}), close: e.target.value } })}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-1">
@@ -948,6 +1115,16 @@ function App() {
                     <div>
                       <h4 className="text-[10px] font-black text-gold uppercase tracking-widest">Dodatkowe informacje</h4>
                       <p className="text-sm text-gray-400 leading-relaxed italic">{selectedWash.description}</p>
+                    </div>
+                  </div>
+                )}
+
+                {selectedWash.phone && selectedWash.isPhoneVisible && (
+                  <div className="flex items-start gap-3">
+                    <Phone className="w-5 h-5 text-gold flex-shrink-0" />
+                    <div>
+                      <h4 className="text-[10px] font-black text-gold uppercase tracking-widest">Kontakt</h4>
+                      <p className="text-sm text-gray-300 font-bold tracking-widest">{selectedWash.phone}</p>
                     </div>
                   </div>
                 )}
