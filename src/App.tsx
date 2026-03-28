@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Map as MapIcon, List, Search, Filter, Car, Star, Navigation, AlertCircle, TrendingDown, Store, LogIn, Mail, Lock, LogOut } from 'lucide-react';
+import { Map as MapIcon, List, Search, Filter, Car, Star, Navigation, AlertCircle, TrendingDown, Store, LogIn, Mail, Lock, LogOut, Plus, CheckCircle2, MapPin, Clock, Info } from 'lucide-react';
 import { mockCarWashes } from './data';
 import type { CarWash, CarWashType } from './data';
 import { clsx, type ClassValue } from 'clsx';
@@ -65,6 +65,154 @@ function MapUpdater({ center }: { center: [number, number] }) {
 }
 
 type View = 'map' | 'list' | 'b2b' | 'detail';
+
+const WASH_SPECS = {
+  bezdotykowa: [
+    'Aktywna piana', 'Mycie podwozia', 'Woskowanie na gorąco', 
+    'Nabłyszczanie', 'Odkurzacz', 'Kompresor', 
+    'Płatność kartą', 'Rozmieniarka', 'Uchwyty na dywaniki'
+  ],
+  reczna: [
+    'Mycie ręczne (gąbka)', 'Osuszanie ręczne', 'Woskowanie ręczne', 
+    'Czyszczenie felg', 'Pranie tapicerki', 'Czyszczenie skór', 
+    'Czyszczenie plastików', 'Niewidzialna wycieraczka', 'Dezynfekcja klimatyzacji'
+  ],
+  autodetailing: [
+    'Korekta lakieru (polerka)', 'Powłoka ceramiczna', 'Powłoka grafenowa', 
+    'Folie ochronne PPF', 'Detailing wnętrza', 'Renowacja skór', 
+    'Renowacja reflektorów', 'Zabezpieczenie felg ceramiczne', 'Czyszczenie komory silnika'
+  ]
+};
+
+function AddWashForm({ onCancel, onSuccess }: { onCancel: () => void, onSuccess: (wash: any) => void }) {
+  const [formData, setFormData] = useState({
+    name: '',
+    address: '',
+    type: 'bezdotykowa' as CarWashType,
+    lat: 52.2297,
+    lng: 21.0122,
+    services: [] as string[]
+  });
+  const [loading, setLoading] = useState(false);
+
+  const toggleService = (service: string) => {
+    setFormData(prev => ({
+      ...prev,
+      services: prev.services.includes(service)
+        ? prev.services.filter(s => s !== service)
+        : [...prev.services, service]
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    // Symulacja zapisu (docelowo Supabase)
+    const newWash = {
+      ...formData,
+      id: Math.random().toString(36).substr(2, 9),
+      rating: 5.0,
+      isQueue: false,
+      queueStatus: 'brak',
+      isMachineWorking: true,
+      hasActiveFoam: formData.services.includes('Aktywna piana'),
+      isPromoted: false
+    };
+
+    setTimeout(() => {
+      onSuccess(newWash);
+      setLoading(false);
+    }, 1000);
+  };
+
+  return (
+    <div className="space-y-6 animate-in fade-in zoom-in-95 duration-300 pb-10">
+      <div className="flex items-center gap-3 border-b border-gold/20 pb-4">
+        <button onClick={onCancel} className="text-gray-500 hover:text-white"><Navigation className="w-6 h-6 rotate-180" /></button>
+        <h2 className="text-xl font-black text-gold uppercase italic tracking-tighter">Nowa Myjnia</h2>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="space-y-4">
+          <div className="space-y-1">
+            <label className="text-[10px] font-black text-gold uppercase tracking-widest ml-1">Nazwa Myjni</label>
+            <input 
+              required
+              className="w-full bg-zinc-900 border-2 border-zinc-800 rounded-2xl py-3 px-4 text-white focus:border-gold outline-none"
+              placeholder="np. Golden Wash Premium"
+              value={formData.name}
+              onChange={e => setFormData({...formData, name: e.target.value})}
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[10px] font-black text-gold uppercase tracking-widest ml-1">Adres</label>
+            <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+              <input 
+                required
+                className="w-full bg-zinc-900 border-2 border-zinc-800 rounded-2xl py-3 pl-10 pr-4 text-white focus:border-gold outline-none"
+                placeholder="ul. Złota 44, Warszawa"
+                value={formData.address}
+                onChange={e => setFormData({...formData, address: e.target.value})}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[10px] font-black text-gold uppercase tracking-widest ml-1">Typ Usługi</label>
+            <div className="grid grid-cols-3 gap-2">
+              {(['bezdotykowa', 'reczna', 'autodetailing'] as CarWashType[]).map(t => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setFormData({...formData, type: t, services: []})}
+                  className={cn(
+                    "py-2 rounded-xl text-[9px] font-black uppercase transition-all border-2",
+                    formData.type === t ? "bg-luxury-gold text-black border-gold" : "bg-zinc-900 text-gray-500 border-zinc-800"
+                  )}
+                >
+                  {t === 'reczna' ? 'Ręczna' : t === 'bezdotykowa' ? 'Bezdotyk.' : 'Detailing'}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <label className="text-[10px] font-black text-gold uppercase tracking-widest ml-1 flex items-center gap-2">
+            <Info className="w-3 h-3" /> Wyposażenie / Usługi
+          </label>
+          <div className="grid grid-cols-1 gap-2">
+            {WASH_SPECS[formData.type].map(service => (
+              <button
+                key={service}
+                type="button"
+                onClick={() => toggleService(service)}
+                className={cn(
+                  "flex items-center justify-between p-3 rounded-2xl border-2 transition-all",
+                  formData.services.includes(service) ? "bg-gold/10 border-gold text-white" : "bg-zinc-900/50 border-zinc-800 text-gray-500"
+                )}
+              >
+                <span className="text-xs font-bold">{service}</span>
+                {formData.services.includes(service) && <CheckCircle2 className="w-4 h-4 text-gold" />}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <button 
+          disabled={loading}
+          type="submit"
+          className="w-full py-4 bg-luxury-gold text-black rounded-2xl font-black text-lg shadow-lg hover:scale-[1.02] active:scale-95 transition-all uppercase italic tracking-widest"
+        >
+          {loading ? 'Zapisywanie...' : 'Dodaj moją myjnię'}
+        </button>
+      </form>
+    </div>
+  );
+}
 
 function AuthUI() {
   const [email, setEmail] = useState('');
@@ -171,6 +319,8 @@ function App() {
   const [selectedWash, setSelectedWash] = useState<CarWash | null>(null);
   const [mapCenter, setMapCenter] = useState<[number, number]>([52.2297, 21.0122]);
   const [user, setUser] = useState<User | null>(null);
+  const [isAddingWash, setIsAddingWash] = useState(false);
+  const [carWashes, setCarWashes] = useState<CarWash[]>(mockCarWashes);
 
   useEffect(() => {
     // Sprawdź aktualną sesję
@@ -190,10 +340,16 @@ function App() {
     await supabase.auth.signOut();
   };
 
+  const handleAddWashSuccess = (newWash: CarWash) => {
+    setCarWashes(prev => [newWash, ...prev]);
+    setIsAddingWash(false);
+    alert('Myjnia została dodana pomyślnie!');
+  };
+
   const filteredWashes = useMemo(() => {
-    if (selectedType === 'all') return mockCarWashes;
-    return mockCarWashes.filter(w => w.type === selectedType);
-  }, [selectedType]);
+    if (selectedType === 'all') return carWashes;
+    return carWashes.filter(w => w.type === selectedType);
+  }, [selectedType, carWashes]);
 
   const handleWashClick = (wash: CarWash) => {
     setSelectedWash(wash);
@@ -359,6 +515,8 @@ function App() {
           <div className="p-6 space-y-6 bg-black min-h-full font-medium">
             {!user ? (
               <AuthUI />
+            ) : isAddingWash ? (
+              <AddWashForm onCancel={() => setIsAddingWash(false)} onSuccess={handleAddWashSuccess} />
             ) : (
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
@@ -385,11 +543,16 @@ function App() {
 
                 <div className="bg-zinc-900 p-5 rounded-3xl shadow-gold border border-white/10 space-y-4">
                   <h3 className="font-black flex items-center gap-2 text-gold text-xs uppercase tracking-widest">
-                    <TrendingDown className="w-5 h-5 text-gold" /> Aktywne Promocje
+                    <TrendingDown className="w-5 h-5 text-gold" /> Twoje Myjnie
                   </h3>
                   <div className="p-4 bg-black/40 rounded-2xl border-2 border-dashed border-zinc-800 text-center">
-                    <p className="text-sm text-gray-500 mb-2 font-bold italic">Twoje dane są bezpieczne w Supabase.</p>
-                    <button className="text-gold text-xs font-black uppercase tracking-widest hover:text-white transition-colors">+ Nowa Promocja</button>
+                    <p className="text-sm text-gray-500 mb-2 font-bold italic">Brak zarejestrowanych myjni.</p>
+                    <button 
+                      onClick={() => setIsAddingWash(true)}
+                      className="text-gold text-xs font-black uppercase tracking-widest hover:text-white transition-colors flex items-center gap-2 mx-auto"
+                    >
+                      <Plus className="w-4 h-4" /> Zgłoś nową myjnię
+                    </button>
                   </div>
                 </div>
 
@@ -405,7 +568,7 @@ function App() {
                 </div>
 
                 <button className="w-full py-4 bg-zinc-900 text-gold border border-gold/50 rounded-2xl font-black uppercase italic tracking-widest shadow-xl hover:bg-zinc-800 transition-all active:scale-95">
-                  Edytuj Profil Myjni
+                  Wykup Wyróżnienie
                 </button>
               </div>
             )}
