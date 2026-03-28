@@ -379,5 +379,6 @@ function StatusCard({ icon, label, value, color }: { icon: React.ReactNode, labe
       <p className={cn("text-sm font-bold uppercase italic tracking-tight", color)}>{value}</p>
     </div>
   );
+}
 
 export default App;
