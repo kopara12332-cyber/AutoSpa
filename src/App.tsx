@@ -108,11 +108,12 @@ function App() {
       {/* Main Content Area */}
       <main className="flex-1 relative overflow-y-auto">
         {activeView === 'map' && (
-          <div className="h-full relative modern-map">
+          <div className="h-full relative modern-map bg-slate-900">
             <MapContainer center={mapCenter} zoom={13} scrollWheelZoom={true} className="h-full w-full" zoomControl={false}>
               <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+                attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
+                url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                subdomains="abcd"
               />
               <MapUpdater center={mapCenter} />
               {filteredWashes.map((wash) => (

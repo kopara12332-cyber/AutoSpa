@@ -6,16 +6,16 @@
   width: 100%;
   height: 100%;
   z-index: 1;
-  background: #f8fafc !important;
+  background: #1a1a1a !important;
 }
 
-/* Modern Map Look using CSS Filters */
+/* Dark Mode Map Styles */
 .modern-map .leaflet-tile-container {
-  filter: grayscale(0.5) contrast(1.1) brightness(1.05) saturate(0.8);
+  filter: none !important;
 }
 
 .modern-map .leaflet-tile {
-  filter: sepia(10%) hue-rotate(-15deg);
+  filter: none !important;
 }
 
 .custom-div-icon {
