@@ -11,7 +11,7 @@
 
 /* Professional Map Styles */
 .modern-map .leaflet-tile-container {
-  filter: saturate(1.2) contrast(1.05) !important;
+  filter: contrast(1.05) brightness(1.02) !important;
 }
 
 .custom-div-icon {
