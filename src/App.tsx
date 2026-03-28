@@ -475,12 +475,14 @@ function App() {
               )}
 
               <div className="grid grid-cols-2 gap-4">
-                 <StatusCard 
-                   icon={<List className="w-5 h-5" />} 
-                   label="Kolejka" 
-                   value={selectedWash.queueStatus} 
-                   color={selectedWash.queueStatus === 'brak' ? 'text-emerald-500' : selectedWash.queueStatus === 'mała' ? 'text-gold' : 'text-rose-500'}
-                 />
+                 {selectedWash.type !== 'autodetailing' && (
+                   <StatusCard 
+                     icon={<List className="w-5 h-5" />} 
+                     label="Kolejka" 
+                     value={selectedWash.queueStatus} 
+                     color={selectedWash.queueStatus === 'brak' ? 'text-emerald-500' : selectedWash.queueStatus === 'mała' ? 'text-gold' : 'text-rose-500'}
+                   />
+                 )}
                  <StatusCard 
                    icon={<AlertCircle className="w-5 h-5" />} 
                    label="Automat" 
@@ -489,20 +491,22 @@ function App() {
                  />
               </div>
 
-              <div className="space-y-3">
-                <h3 className="font-black text-gold text-xs uppercase tracking-[0.2em]">Status "na żywo"</h3>
-                <div className="flex gap-2">
-                   <button className="flex-1 py-3 bg-zinc-900 text-white border-2 border-zinc-800 rounded-2xl text-xs font-black uppercase hover:border-gold transition-all active:scale-95">
-                     Brak
-                   </button>
-                   <button className="flex-1 py-3 bg-zinc-900 text-white border-2 border-zinc-800 rounded-2xl text-xs font-black uppercase hover:border-gold transition-all active:scale-95">
-                     Mała
-                   </button>
-                   <button className="flex-1 py-3 bg-zinc-900 text-white border-2 border-zinc-800 rounded-2xl text-xs font-black uppercase hover:border-gold transition-all active:scale-95">
-                     Duża
-                   </button>
+              {selectedWash.type !== 'autodetailing' && (
+                <div className="space-y-3">
+                  <h3 className="font-black text-gold text-xs uppercase tracking-[0.2em]">Status "na żywo"</h3>
+                  <div className="flex gap-2">
+                     <button className="flex-1 py-3 bg-zinc-900 text-white border-2 border-zinc-800 rounded-2xl text-xs font-black uppercase hover:border-gold transition-all active:scale-95">
+                       Brak
+                     </button>
+                     <button className="flex-1 py-3 bg-zinc-900 text-white border-2 border-zinc-800 rounded-2xl text-xs font-black uppercase hover:border-gold transition-all active:scale-95">
+                       Mała
+                     </button>
+                     <button className="flex-1 py-3 bg-zinc-900 text-white border-2 border-zinc-800 rounded-2xl text-xs font-black uppercase hover:border-gold transition-all active:scale-95">
+                       Duża
+                     </button>
+                  </div>
                 </div>
-              </div>
+              )}
 
               <button className="w-full py-4 bg-luxury-gold text-black rounded-2xl font-black text-lg shadow-lg shadow-gold/20 hover:scale-[1.02] active:scale-95 uppercase italic tracking-[0.1em] transition-all">
                 Nawiguj Teraz
@@ -661,12 +665,14 @@ function CarWashCard({ wash, onClick }: { wash: CarWash, onClick: () => void }) 
         </div>
         <p className="text-[10px] text-gray-500 truncate mb-2 font-medium">{wash.address}</p>
         <div className="flex gap-2">
-          <span className={cn(
-            "text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider border-2",
-            wash.queueStatus === 'brak' ? "bg-emerald-950/30 text-emerald-500 border-emerald-900" : wash.queueStatus === 'mała' ? "bg-gold/10 text-gold border-gold/30" : "bg-rose-950/30 text-rose-500 border-rose-900"
-          )}>
-            {wash.queueStatus}
-          </span>
+          {wash.type !== 'autodetailing' && (
+            <span className={cn(
+              "text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider border-2",
+              wash.queueStatus === 'brak' ? "bg-emerald-950/30 text-emerald-500 border-emerald-900" : wash.queueStatus === 'mała' ? "bg-gold/10 text-gold border-gold/30" : "bg-rose-950/30 text-rose-500 border-rose-900"
+            )}>
+              {wash.queueStatus}
+            </span>
+          )}
           {wash.isPromoted && (
             <span className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase bg-luxury-gold text-black shadow-md italic tracking-widest">
               PREMIUM
