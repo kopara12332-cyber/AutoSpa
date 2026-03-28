@@ -68,25 +68,54 @@ type View = 'map' | 'list' | 'b2b' | 'detail';
 
 const WASH_SPECS = {
   bezdotykowa: [
-    'Aktywna piana', 'Mycie podwozia', 'Woskowanie na gorąco', 
-    'Nabłyszczanie', 'Uchwyty na dywaniki'
+    'Aktywna piana (Turbo)', 'Mycie wstępne (gorąca woda)', 'Mycie zasadnicze (mikroproszek)',
+    'Spłukiwanie (woda sieciowa)', 'Woskowanie nanopolimerem / Hydrowosk', 'Nabłyszczanie (Osmoza)',
+    'Mycie podwozia (automat)', 'Oprysk felg / Chemia do felg', 'Szczotka z pianą (miękka)', 
+    'Usuwanie owadów (specjalny program)', 'Mycie motocykli (uchwyt)', 'Oprysk wstępny (zmiękczanie)',
+    'Turbopiana (bardzo gęsta)', 'Program "Stop" (pauza)', 'Stanowisko SUV/Bus/Kamper',
+    'Uchwyty na dywaniki (klamry)', 'Oświetlenie nocne LED', 'Zadaszenie stanowisk'
   ],
   reczna: [
-    'Mycie ręczne (gąbka)', 'Osuszanie ręczne', 'Woskowanie ręczne', 
-    'Czyszczenie felg', 'Pranie tapicerki', 'Czyszczenie skór', 
-    'Czyszczenie plastików', 'Niewidzialna wycieraczka', 'Dezynfekcja klimatyzacji'
+    'Mycie ręczne (na dwa wiadra)', 'Mycie detailingowe (pędzelkowanie)', 'Mycie silnika (góra/dół)',
+    'Mycie podwozia (podnośnik)', 'Osuszanie ręczne (mikrofibra)', 'Osuszanie sprężonym powietrzem',
+    'Glinkowanie karoserii', 'Dekontaminacja (usuwanie smoły/asfaltu)', 'Deironizacja felg (krwawa felga)',
+    'Woskowanie ręczne (twardy wosk)', 'Aplikacja wosku na mokro', 'Mycie szyb (odtłuszczanie)',
+    'Odkurzanie wnętrza (bardzo dokładne)', 'Czyszczenie kokpitu i plastików', 'Pranie tapicerki (ekstrakcyjne)',
+    'Czyszczenie i impregnacja skór', 'Ozonowanie wnętrza (dezynfekcja)', 'Odgrzybianie klimatyzacji',
+    'Niewidzialna wycieraczka', 'Dressing opon (efekt mokrej opony)', 'Dressing plastików zewnętrznych',
+    'Czyszczenie wnęk (drzwi/klapa/wlew)', 'Usuwanie sierści zwierząt', 'Przygotowanie do sprzedaży',
+    'Usuwanie naklejek i reklam', 'Mycie motocykli i quadów'
   ],
   autodetailing: [
-    'Korekta lakieru (polerka)', 'Powłoka ceramiczna', 'Powłoka grafenowa', 
-    'Folie ochronne PPF', 'Detailing wnętrza', 'Renowacja skór', 
-    'Renowacja reflektorów', 'Zabezpieczenie felg ceramiczne', 'Czyszczenie komory silnika'
+    'Korekta lakieru (One Step)', 'Korekta lakieru (Wieloetapowa)', 'Powłoka ceramiczna (lakier/felgi)',
+    'Powłoka grafenowa', 'Powłoka elastomerowa', 'Folie ochronne PPF (całe/front)',
+    'Zmiana koloru (folia)', 'Dechroming (czarne chromy)', 'Przyciemnianie szyb',
+    'Renowacja reflektorów (polerowanie)', 'Renowacja skór (naprawa/malowanie)', 'Pełny detailing wnętrza',
+    'Zabezpieczenie dachów kabrioletów', 'Polerowanie szyb (usuwanie rys)', 'Zabezpieczenie antykorozyjne',
+    'Usuwanie wgnieceń (PDR)', 'Zaprawki lakiernicze', 'Czyszczenie silnika (detailing)',
+    'Powłoka hydrofobowa na felgi', 'Zabezpieczenie felg (wosk/ceramika)'
   ]
 };
 
 const GLOBAL_SPECS = {
-  payment: ['Gotówka', 'Karta', 'Aplikacja', 'Żeton/Moneta', 'Google Pay'],
-  equipment: ['Odkurzacz', 'Kompresor', 'Rozmieniarka', 'Automat do kawy', 'Toaleta', 'Wi-Fi', 'Suszarka'],
-  hours: ['24/7', 'Tylko w dzień', 'Pon-Pt: 8:00-20:00']
+  payment: [
+    'Gotówka (monety)', 'Gotówka (banknoty)', 'Karta płatnicza (terminal)',
+    'Płatność zbliżeniowa (telefon)', 'Blik', 'Aplikacja mobilna (Beem/mPay)',
+    'Żeton myjni', 'Karta przedpłacona / lojalnościowa', 'Faktura VAT (automat)',
+    'Abonament dla firm', 'Przelew (B2B)'
+  ],
+  equipment: [
+    'Odkurzacz (mocny)', 'Kompresor do kół (powietrze)', 'Kompresor do wody (szczeliny)',
+    'Rozmieniarka pieniędzy', 'Automat do kawy / napojów', 'Automat z przekąskami',
+    'Sklep z kosmetykami', 'Myjka do dywaników (automat)', 'Stół do trzepania dywaników',
+    'Toaleta dla klientów', 'Wi-Fi dla klientów', 'Poczekalnia z klimatyzacją',
+    'Wiadro z ciepłą wodą', 'Stanowisko do suszenia (dach)', 'Monitoring 24h',
+    'Paczkomat na terenie', 'Ładowarka EV (elektryki)'
+  ],
+  hours: [
+    '24/7 (Całodobowo)', 'Pon-Pt: 8:00-20:00', 'Pon-Sob: 9:00-18:00',
+    'Codziennie: 7:00-22:00', 'Wymagana rezerwacja', 'Tylko przy dobrej pogodzie'
+  ]
 };
 
 function AddWashForm({ onCancel, onSuccess }: { onCancel: () => void, onSuccess: (wash: any) => void }) {
@@ -124,7 +153,7 @@ function AddWashForm({ onCancel, onSuccess }: { onCancel: () => void, onSuccess:
       isQueue: false,
       queueStatus: 'brak',
       isMachineWorking: true,
-      hasActiveFoam: formData.services.includes('Aktywna piana'),
+      hasActiveFoam: formData.services.some(s => s.toLowerCase().includes('aktywna piana')),
       isPromoted: false,
       status: 'pending' as 'pending' | 'approved'
     };
@@ -215,14 +244,14 @@ function AddWashForm({ onCancel, onSuccess }: { onCancel: () => void, onSuccess:
           {/* Płatność */}
           <div className="space-y-4 bg-zinc-900/50 p-4 rounded-3xl border border-white/5">
             <h3 className="text-[10px] font-black text-gold uppercase tracking-[0.2em] mb-2 flex items-center gap-2"><CreditCard className="w-3 h-3" /> Płatność</h3>
-            <div className="flex flex-wrap gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {GLOBAL_SPECS.payment.map(p => (
                 <button
                   key={p}
                   type="button"
                   onClick={() => toggleItem('payment', p)}
                   className={cn(
-                    "px-4 py-2 rounded-xl text-[8px] font-black uppercase transition-all border-2",
+                    "px-2 py-2 rounded-xl text-[8px] font-black uppercase transition-all border-2 text-left",
                     formData.payment.includes(p) ? "bg-gold/20 text-white border-gold" : "bg-black text-gray-500 border-zinc-800"
                   )}
                 >
@@ -235,14 +264,14 @@ function AddWashForm({ onCancel, onSuccess }: { onCancel: () => void, onSuccess:
           {/* Wyposażenie */}
           <div className="space-y-4 bg-zinc-900/50 p-4 rounded-3xl border border-white/5">
             <h3 className="text-[10px] font-black text-gold uppercase tracking-[0.2em] mb-2 flex items-center gap-2"><Settings className="w-3 h-3" /> Wyposażenie</h3>
-            <div className="flex flex-wrap gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {GLOBAL_SPECS.equipment.map(e => (
                 <button
                   key={e}
                   type="button"
                   onClick={() => toggleItem('equipment', e)}
                   className={cn(
-                    "px-4 py-2 rounded-xl text-[8px] font-black uppercase transition-all border-2",
+                    "px-2 py-2 rounded-xl text-[8px] font-black uppercase transition-all border-2 text-left",
                     formData.equipment.includes(e) ? "bg-gold/20 text-white border-gold" : "bg-black text-gray-500 border-zinc-800"
                   )}
                 >
@@ -255,19 +284,19 @@ function AddWashForm({ onCancel, onSuccess }: { onCancel: () => void, onSuccess:
           {/* Usługi specyficzne */}
           <div className="space-y-4 bg-zinc-900/50 p-4 rounded-3xl border border-white/5">
             <h3 className="text-[10px] font-black text-gold uppercase tracking-[0.2em] mb-2 flex items-center gap-2"><Plus className="w-3 h-3" /> Usługi {formData.type}</h3>
-            <div className="grid grid-cols-1 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {WASH_SPECS[formData.type].map(service => (
                 <button
                   key={service}
                   type="button"
                   onClick={() => toggleItem('services', service)}
                   className={cn(
-                    "flex items-center justify-between p-3 rounded-2xl border-2 transition-all",
+                    "flex items-center justify-between p-2 rounded-xl border-2 transition-all text-left",
                     formData.services.includes(service) ? "bg-gold/10 border-gold text-white" : "bg-black/50 border-zinc-800 text-gray-500"
                   )}
                 >
-                  <span className="text-xs font-bold">{service}</span>
-                  {formData.services.includes(service) && <CheckCircle2 className="w-4 h-4 text-gold" />}
+                  <span className="text-[9px] font-bold leading-tight">{service}</span>
+                  {formData.services.includes(service) && <CheckCircle2 className="w-3 h-3 text-gold flex-shrink-0" />}
                 </button>
               ))}
             </div>
