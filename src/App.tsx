@@ -108,12 +108,11 @@ function App() {
       {/* Main Content Area */}
       <main className="flex-1 relative overflow-y-auto">
         {activeView === 'map' && (
-          <div className="h-full relative modern-map bg-slate-900">
+          <div className="h-full relative modern-map bg-slate-100">
             <MapContainer center={mapCenter} zoom={13} scrollWheelZoom={true} className="h-full w-full" zoomControl={false}>
               <TileLayer
-                attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
-                url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                subdomains="abcd"
+                attribution='Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012'
+                url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}"
               />
               <MapUpdater center={mapCenter} />
               {filteredWashes.map((wash) => (
