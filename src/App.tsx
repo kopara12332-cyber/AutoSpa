@@ -1,11 +1,13 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Map as MapIcon, List, Search, Filter, Car, Star, Navigation, AlertCircle, TrendingDown, Store, Droplets, Sparkles, HandMetal } from 'lucide-react';
+import { Map as MapIcon, List, Search, Filter, Car, Star, Navigation, AlertCircle, TrendingDown, Store, Droplets, Sparkles, HandMetal, LogIn, Mail, Lock, LogOut } from 'lucide-react';
 import { mockCarWashes } from './data';
 import type { CarWash, CarWashType } from './data';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
+import { supabase } from './supabaseClient';
+import type { User } from '@supabase/supabase-js';
 
 // Leaflet icon fix
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -64,11 +66,129 @@ function MapUpdater({ center }: { center: [number, number] }) {
 
 type View = 'map' | 'list' | 'b2b' | 'detail';
 
+function AuthUI() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [mode, setMode] = useState<'login' | 'register'>('login');
+
+  const handleAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      if (mode === 'login') {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.auth.signUp({ email, password });
+        if (error) throw error;
+        alert('Sprawdź e-mail, aby potwierdzić rejestrację!');
+      }
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6 py-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="text-center space-y-2">
+        <div className="bg-luxury-gold w-16 h-16 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-gold/20">
+          <LogIn className="w-8 h-8 text-black" />
+        </div>
+        <h2 className="text-2xl font-black text-gold uppercase italic tracking-tighter">
+          {mode === 'login' ? 'Zaloguj się' : 'Dołącz do sieci'}
+        </h2>
+        <p className="text-gray-400 text-xs uppercase tracking-widest">Strefa Właściciela</p>
+      </div>
+
+      <form onSubmit={handleAuth} className="space-y-4">
+        <div className="space-y-1">
+          <label className="text-[10px] font-black text-gold uppercase tracking-widest ml-1">E-mail</label>
+          <div className="relative">
+            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+            <input 
+              type="email" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full bg-zinc-900 border-2 border-zinc-800 rounded-2xl py-4 pl-12 pr-4 text-white focus:border-gold outline-none transition-all font-medium"
+              placeholder="twoj@email.pl"
+              required
+            />
+          </div>
+        </div>
+
+        <div className="space-y-1">
+          <label className="text-[10px] font-black text-gold uppercase tracking-widest ml-1">Hasło</label>
+          <div className="relative">
+            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+            <input 
+              type="password" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full bg-zinc-900 border-2 border-zinc-800 rounded-2xl py-4 pl-12 pr-4 text-white focus:border-gold outline-none transition-all font-medium"
+              placeholder="••••••••"
+              required
+            />
+          </div>
+        </div>
+
+        {error && (
+          <div className="p-3 bg-rose-950/30 border border-rose-900 rounded-xl flex items-center gap-2 text-rose-500 text-xs font-bold animate-shake">
+            <AlertCircle className="w-4 h-4" />
+            {error}
+          </div>
+        )}
+
+        <button 
+          type="submit" 
+          disabled={loading}
+          className="w-full py-4 bg-luxury-gold text-black rounded-2xl font-black text-lg shadow-lg shadow-gold/20 hover:scale-[1.02] active:scale-95 uppercase italic tracking-widest transition-all disabled:opacity-50"
+        >
+          {loading ? 'Przetwarzanie...' : mode === 'login' ? 'Wejdź do panelu' : 'Zarejestruj myjnię'}
+        </button>
+      </form>
+
+      <div className="text-center">
+        <button 
+          onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
+          className="text-gray-500 text-xs font-bold uppercase tracking-widest hover:text-gold transition-colors"
+        >
+          {mode === 'login' ? 'Nie masz konta? Zarejestruj się' : 'Masz już konto? Zaloguj się'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [activeView, setActiveView] = useState<View>('map');
   const [selectedType, setSelectedType] = useState<CarWashType | 'all'>('all');
   const [selectedWash, setSelectedWash] = useState<CarWash | null>(null);
   const [mapCenter, setMapCenter] = useState<[number, number]>([52.2297, 21.0122]);
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    // Sprawdź aktualną sesję
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    // Słuchaj zmian w autoryzacji
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
 
   const filteredWashes = useMemo(() => {
     if (selectedType === 'all') return mockCarWashes;
@@ -237,38 +357,58 @@ function App() {
 
         {activeView === 'b2b' && (
           <div className="p-6 space-y-6 bg-black min-h-full font-medium">
-            <div className="text-center space-y-2">
-              <div className="bg-luxury-gold w-20 h-20 rounded-3xl flex items-center justify-center mx-auto shadow-xl transform rotate-3">
-                <Store className="w-10 h-10 text-black" />
+            {!user ? (
+              <AuthUI />
+            ) : (
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] text-gray-500 uppercase font-black">Zalogowany jako</span>
+                    <span className="text-gold text-sm font-bold truncate max-w-[150px]">{user.email}</span>
+                  </div>
+                  <button 
+                    onClick={handleLogout}
+                    className="p-2 bg-zinc-900 border border-gold/30 rounded-xl text-gold hover:bg-zinc-800 transition-all active:scale-95"
+                    title="Wyloguj"
+                  >
+                    <LogOut className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="text-center space-y-2">
+                  <div className="bg-luxury-gold w-20 h-20 rounded-3xl flex items-center justify-center mx-auto shadow-xl transform rotate-3">
+                    <Store className="w-10 h-10 text-black" />
+                  </div>
+                  <h2 className="text-2xl font-black text-gold uppercase italic tracking-tighter mt-4">Strefa Premium</h2>
+                  <p className="text-gray-400 text-sm">Zarządzaj swoją myjnią z poziomu chmury.</p>
+                </div>
+
+                <div className="bg-zinc-900 p-5 rounded-3xl shadow-gold border border-white/10 space-y-4">
+                  <h3 className="font-black flex items-center gap-2 text-gold text-xs uppercase tracking-widest">
+                    <TrendingDown className="w-5 h-5 text-gold" /> Aktywne Promocje
+                  </h3>
+                  <div className="p-4 bg-black/40 rounded-2xl border-2 border-dashed border-zinc-800 text-center">
+                    <p className="text-sm text-gray-500 mb-2 font-bold italic">Twoje dane są bezpieczne w Supabase.</p>
+                    <button className="text-gold text-xs font-black uppercase tracking-widest hover:text-white transition-colors">+ Nowa Promocja</button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-zinc-900 p-4 rounded-3xl border border-white/10 shadow-sm">
+                      <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Zasięg</p>
+                      <p className="text-2xl font-black text-gold">1,248</p>
+                  </div>
+                  <div className="bg-zinc-900 p-4 rounded-3xl border border-white/10 shadow-sm">
+                      <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Kliki</p>
+                      <p className="text-2xl font-black text-gold">342</p>
+                  </div>
+                </div>
+
+                <button className="w-full py-4 bg-zinc-900 text-gold border border-gold/50 rounded-2xl font-black uppercase italic tracking-widest shadow-xl hover:bg-zinc-800 transition-all active:scale-95">
+                  Edytuj Profil Myjni
+                </button>
               </div>
-              <h2 className="text-2xl font-black text-gold uppercase italic tracking-tighter mt-4">Strefa Premium</h2>
-              <p className="text-gray-400 text-sm">Podkręć prestiż swojej myjni.</p>
-            </div>
-
-            <div className="bg-zinc-900 p-5 rounded-3xl shadow-gold border border-white/10 space-y-4">
-               <h3 className="font-black flex items-center gap-2 text-gold text-xs uppercase tracking-widest">
-                 <TrendingDown className="w-5 h-5 text-gold" /> Aktywne Promocje
-               </h3>
-               <div className="p-4 bg-black/40 rounded-2xl border-2 border-dashed border-zinc-800 text-center">
-                 <p className="text-sm text-gray-500 mb-2 font-bold italic">Brak paliwa? Dodaj promocję!</p>
-                 <button className="text-gold text-xs font-black uppercase tracking-widest hover:text-white transition-colors">+ Nowa Promocja</button>
-               </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-               <div className="bg-zinc-900 p-4 rounded-3xl border border-white/10 shadow-sm">
-                  <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Zasięg</p>
-                  <p className="text-2xl font-black text-gold">1,248</p>
-               </div>
-               <div className="bg-zinc-900 p-4 rounded-3xl border border-white/10 shadow-sm">
-                  <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Kliki</p>
-                  <p className="text-2xl font-black text-gold">342</p>
-               </div>
-            </div>
-
-            <button className="w-full py-4 bg-zinc-900 text-gold border border-gold/50 rounded-2xl font-black uppercase italic tracking-widest shadow-xl hover:bg-zinc-800 transition-all active:scale-95">
-              Wykup Wyróżnienie
-            </button>
+            )}
           </div>
         )}
       </main>
