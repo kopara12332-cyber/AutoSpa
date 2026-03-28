@@ -99,7 +99,7 @@ function App() {
             <FilterChip active={selectedType === 'all'} onClick={() => setSelectedType('all')} label="Wszystkie" />
             <FilterChip active={selectedType === 'bezdotykowa'} onClick={() => setSelectedType('bezdotykowa')} label="Bezdotykowa" />
             <FilterChip active={selectedType === 'reczna'} onClick={() => setSelectedType('reczna')} label="Ręczna" />
-            <FilterChip active={selectedType === 'szczotki'} onClick={() => setSelectedType('szczotki')} label="Szczotki" />
+            <FilterChip active={selectedType === 'autodetailing'} onClick={() => setSelectedType('autodetailing')} label="Autodetailing" />
           </div>
         )}
       </header>

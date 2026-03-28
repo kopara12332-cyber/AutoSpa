@@ -1,4 +1,4 @@
-export type CarWashType = 'bezdotykowa' | 'reczna' | 'szczotki';
+export type CarWashType = 'bezdotykowa' | 'reczna' | 'autodetailing';
 
 export interface CarWash {
   id: string;
@@ -47,15 +47,17 @@ export const mockCarWashes: CarWash[] = [
   },
   {
     id: '3',
-    name: 'SuperWash - Myjnia Automatyczna',
-    type: 'szczotki',
+    name: 'Royal Detailing - Autodetailing',
+    type: 'autodetailing',
     address: 'ul. Główna 5, Warszawa',
-    rating: 3.9,
+    rating: 4.9,
     lat: 52.2200,
     lng: 21.0050,
-    isQueue: true,
-    queueStatus: 'duża',
-    isMachineWorking: false,
-    hasActiveFoam: true
+    isQueue: false,
+    queueStatus: 'brak',
+    isMachineWorking: true,
+    hasActiveFoam: true,
+    isPromoted: true,
+    promotionText: 'Powłoka Ceramiczna -15%!'
   },
 ];
