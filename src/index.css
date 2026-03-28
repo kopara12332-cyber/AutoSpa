@@ -9,6 +9,15 @@
   background: #f8fafc !important;
 }
 
+/* Modern Map Look using CSS Filters */
+.modern-map .leaflet-tile-container {
+  filter: grayscale(0.5) contrast(1.1) brightness(1.05) saturate(0.8);
+}
+
+.modern-map .leaflet-tile {
+  filter: sepia(10%) hue-rotate(-15deg);
+}
+
 .custom-div-icon {
   background: none;
   border: none;

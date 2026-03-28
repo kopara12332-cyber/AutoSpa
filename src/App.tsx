@@ -108,8 +108,8 @@ function App() {
       {/* Main Content Area */}
       <main className="flex-1 relative overflow-y-auto">
         {activeView === 'map' && (
-          <div className="h-full relative">
-            <MapContainer center={mapCenter} zoom={13} scrollWheelZoom={true} className="h-full w-full">
+          <div className="h-full relative modern-map">
+            <MapContainer center={mapCenter} zoom={13} scrollWheelZoom={true} className="h-full w-full" zoomControl={false}>
               <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
