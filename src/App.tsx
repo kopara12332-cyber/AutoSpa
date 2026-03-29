@@ -1205,7 +1205,7 @@ function App() {
       )}
 
       {/* App Header (Midnight Gold Style) */}
-      <header className="bg-gold-gradient text-white p-4 shadow-lg z-20 flex flex-col gap-4 border-b border-white/10 shimmer-effect">
+      <header className="bg-gold-gradient text-white p-4 shadow-lg z-20 flex flex-col gap-4 border-b border-white/10">
         <div className="flex justify-between items-center px-2">
           <div className="flex items-center gap-3" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
              <div className="bg-luxury-gold p-2 rounded-xl shadow-lg transform -rotate-3 transition-transform active:scale-90">
@@ -1947,7 +1947,7 @@ function CarWashCard({ wash, onClick, userLocation }: { wash: CarWash, onClick: 
     <div 
       onClick={onClick}
       className={cn(
-        "bg-zinc-900 p-4 rounded-3xl shadow-sm border border-white/10 flex gap-4 items-center active:scale-[0.98] transition-all cursor-pointer hover:shadow-gold hover:border-gold/30 shimmer-effect",
+        "bg-zinc-900 p-4 rounded-3xl shadow-sm border border-white/10 flex gap-4 items-center active:scale-[0.98] transition-all cursor-pointer hover:shadow-gold hover:border-gold/30",
         wash.isPromoted && "border-gold/50 bg-gold/5"
       )}
     >
@@ -2000,13 +2000,10 @@ function CarWashCard({ wash, onClick, userLocation }: { wash: CarWash, onClick: 
 
 function StatusCard({ icon, label, value, color }: { icon: React.ReactNode, label: string, value: string, color: string }) {
   return (
-    <div className="bg-black/40 p-4 rounded-2xl border border-white/10 shadow-inner relative overflow-hidden shimmer-effect">
+    <div className="bg-black/40 p-4 rounded-2xl border border-white/10 shadow-inner">
       <div className="flex items-center gap-2 text-gray-500 mb-1">
         {icon}
-        <div className="flex items-center gap-1.5">
-          <span className="text-[9px] font-black uppercase tracking-widest">{label}</span>
-          {label === 'Kolejka' && <div className="status-dot-pulse" />}
-        </div>
+        <span className="text-[9px] font-black uppercase tracking-widest">{label}</span>
       </div>
       <p className={cn("text-sm font-black uppercase italic tracking-tighter", color)}>{value}</p>
     </div>
