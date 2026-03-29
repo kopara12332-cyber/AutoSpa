@@ -1119,9 +1119,6 @@ function App() {
               <LocateFixed className="w-5 h-5 group-active:scale-90 transition-transform" />
             </button>
             <button className="p-2 hover:bg-white/10 rounded-full transition-colors text-gold">
-              <Search className="w-5 h-5" />
-            </button>
-            <button className="p-2 hover:bg-white/10 rounded-full transition-colors text-gold">
               <Filter className="w-5 h-5" />
             </button>
           </div>
