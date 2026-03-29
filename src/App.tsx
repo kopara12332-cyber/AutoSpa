@@ -978,6 +978,7 @@ function App() {
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
+  const [showNearestSelector, setShowNearestSelector] = useState(false);
 
   const findNearestWash = (type: CarWashType) => {
     setIsLocating(true);
@@ -1011,6 +1012,7 @@ function App() {
         setMapCenter([nearest.lat, nearest.lng]);
         setActiveView('detail');
         setIsLocating(false);
+        setShowNearestSelector(false);
       },
       (error) => {
         console.error("Geolocation error:", error);
@@ -1109,6 +1111,13 @@ function App() {
              <h1 className="text-2xl font-black tracking-tighter italic uppercase tracking-widest text-gold select-none">AutoSpa</h1>
           </div>
           <div className="flex gap-1">
+            <button 
+              onClick={() => setShowNearestSelector(true)}
+              className="p-2 hover:bg-white/10 rounded-full transition-colors text-gold flex items-center gap-1 group"
+              title="Znajdź najbliższą"
+            >
+              <LocateFixed className="w-5 h-5 group-active:scale-90 transition-transform" />
+            </button>
             <button className="p-2 hover:bg-white/10 rounded-full transition-colors text-gold">
               <Search className="w-5 h-5" />
             </button>
@@ -1126,32 +1135,64 @@ function App() {
               <FilterChip active={selectedType === 'reczna'} onClick={() => setSelectedType('reczna')} label="Ręczna" />
               <FilterChip active={selectedType === 'autodetailing'} onClick={() => setSelectedType('autodetailing')} label="Autodetailing" />
             </div>
-            
-            <div className="bg-zinc-900/50 p-3 rounded-2xl border border-gold/20 flex flex-col gap-2 shadow-inner">
-              <div className="flex items-center gap-2 mb-1">
-                <LocateFixed className="w-3 h-3 text-gold" />
-                <span className="text-[9px] font-black text-gold uppercase tracking-[0.2em]">Znajdź najbliższe:</span>
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                {(['bezdotykowa', 'reczna', 'autodetailing'] as CarWashType[]).map(t => (
-                  <button
-                    key={t}
-                    disabled={isLocating}
-                    onClick={() => findNearestWash(t)}
-                    className="py-2 bg-black border border-zinc-800 rounded-xl text-[8px] font-black uppercase text-gray-400 hover:border-gold hover:text-gold transition-all flex items-center justify-center gap-1 active:scale-95 disabled:opacity-50"
-                  >
-                    {isLocating ? <Loader2 className="w-3 h-3 animate-spin" /> : (
-                      <>
-                        {t === 'bezdotykowa' ? 'Bezdotyk.' : t === 'reczna' ? 'Ręczna' : 'Detailing'}
-                      </>
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
           </div>
         )}
       </header>
+
+      {/* Panel: Znajdź najbliższe (Slide-up Overlay) */}
+      {showNearestSelector && (
+        <div className="fixed inset-0 z-[3000] flex items-end">
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300" 
+            onClick={() => setShowNearestSelector(false)}
+          />
+          <div className="w-full bg-zinc-950 border-t-2 border-gold/50 rounded-t-[2.5rem] p-6 pb-12 animate-slide-up relative z-10 shadow-[0_-10px_40px_rgba(212,175,55,0.15)]">
+            <div className="absolute top-3 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-white/10 rounded-full" />
+            
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex items-center gap-3">
+                <div className="bg-gold/10 p-2 rounded-xl">
+                  <LocateFixed className="w-5 h-5 text-gold" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-gold uppercase tracking-[0.2em]">Znajdź najbliższe</h3>
+                  <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Wybierz kategorię punktu</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setShowNearestSelector(false)}
+                className="p-2 bg-zinc-900 rounded-xl text-gray-500 hover:text-white transition-colors"
+              >
+                <XCircle className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3">
+              {(['bezdotykowa', 'reczna', 'autodetailing'] as CarWashType[]).map(t => (
+                <button
+                  key={t}
+                  disabled={isLocating}
+                  onClick={() => findNearestWash(t)}
+                  className="w-full p-5 bg-zinc-900 border-2 border-zinc-800 rounded-2xl flex items-center justify-between group hover:border-gold transition-all active:scale-95 disabled:opacity-50"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={cn(
+                      "w-10 h-10 rounded-xl flex items-center justify-center transition-all",
+                      t === 'bezdotykowa' ? "bg-gold text-black" : t === 'reczna' ? "bg-black border-2 border-gold text-gold" : "bg-gold text-black"
+                    )}>
+                      {t === 'bezdotykowa' ? <Car className="w-5 h-5" /> : t === 'reczna' ? <Hand className="w-5 h-5" /> : <Sparkles className="w-5 h-5" />}
+                    </div>
+                    <span className="text-xs font-black uppercase tracking-widest text-gray-300 group-hover:text-gold transition-colors">
+                      {t === 'bezdotykowa' ? 'Myjnia Bezdotykowa' : t === 'reczna' ? 'Myjnia Ręczna' : 'Autodetailing'}
+                    </span>
+                  </div>
+                  {isLocating ? <Loader2 className="w-5 h-5 animate-spin text-gold" /> : <Navigation className="w-4 h-4 text-gray-600 group-hover:text-gold rotate-45 transition-colors" />}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Content Area */}
       <main className="flex-1 relative overflow-y-auto">
