@@ -47,7 +47,8 @@ export const mockCarWashes: CarWash[] = [
     hasActiveFoam: true,
     isPromoted: true,
     promotionText: 'Happy Hour: -20% do 06:00!',
-    ownerEmail: 'demo@demo.pl'
+    ownerEmail: 'demo@demo.pl',
+    openingHours: { is24h: true }
   },
   {
     id: '2',
@@ -60,7 +61,13 @@ export const mockCarWashes: CarWash[] = [
     isQueue: true,
     queueStatus: 'mała',
     isMachineWorking: true,
-    hasActiveFoam: false
+    hasActiveFoam: false,
+    openingHours: {
+      is24h: false,
+      weekday: { open: '08:00', close: '20:00', closed: false },
+      saturday: { open: '09:00', close: '16:00', closed: false },
+      sunday: { open: '10:00', close: '14:00', closed: true }
+    }
   },
   {
     id: '3',
@@ -75,7 +82,13 @@ export const mockCarWashes: CarWash[] = [
     isMachineWorking: true,
     hasActiveFoam: true,
     isPromoted: true,
-    promotionText: 'Powłoka Ceramiczna -15%!'
+    promotionText: 'Powłoka Ceramiczna -15%!',
+    openingHours: {
+      is24h: false,
+      weekday: { open: '09:00', close: '18:00', closed: false },
+      saturday: { open: '10:00', close: '15:00', closed: false },
+      sunday: { open: '00:00', close: '00:00', closed: true }
+    }
   },
   {
     id: '4',
@@ -90,6 +103,12 @@ export const mockCarWashes: CarWash[] = [
     isMachineWorking: true,
     hasActiveFoam: false,
     hours: 'Pon-Pt: 08:00-20:00 | Sob: 09:00-17:00',
+    openingHours: {
+      is24h: false,
+      weekday: { open: '08:00', close: '20:00', closed: false },
+      saturday: { open: '09:00', close: '17:00', closed: false },
+      sunday: { open: '00:00', close: '00:00', closed: true }
+    },
     phone: '+48 500 100 200',
     isPhoneVisible: true,
     description: 'Specjalizujemy się w ekologicznym myciu parowym i czyszczeniu tapicerki.'

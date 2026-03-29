@@ -1855,11 +1855,18 @@ function App() {
               </button>
 
               <div className="space-y-6 pt-4 border-t border-white/10">
-                {selectedWash.hours && (
+                {selectedWash.openingHours && (
                   <div className="flex items-start gap-3">
                     <Clock className="w-5 h-5 text-gold flex-shrink-0" />
                     <div>
-                      <h4 className="text-[10px] font-black text-gold uppercase tracking-widest">Godziny działania</h4>
+                      <h4 className="text-[10px] font-black text-gold uppercase tracking-widest flex items-center gap-2">
+                        Godziny działania
+                        {getOpeningStatus(selectedWash) && (
+                          <span className={cn("text-[8px] px-1.5 py-0.5 rounded-full bg-white/5", getOpeningStatus(selectedWash)?.color)}>
+                            {getOpeningStatus(selectedWash)?.text}
+                          </span>
+                        )}
+                      </h4>
                       <p className="text-sm text-gray-300 font-medium">{selectedWash.hours}</p>
                     </div>
                   </div>
@@ -2105,7 +2112,37 @@ function NavButton({ active, onClick, icon, label }: { active: boolean, onClick:
   );
 }
 
+const getOpeningStatus = (wash: CarWash) => {
+  if (!wash.openingHours) return null;
+  if (wash.openingHours.is24h) return { status: 'open', text: 'Otwarte 24/7', color: 'text-emerald-500' };
+
+  const now = new Date();
+  const day = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  const time = now.getHours() * 60 + now.getMinutes();
+
+  let hours;
+  if (day === 0) hours = wash.openingHours.sunday;
+  else if (day === 6) hours = wash.openingHours.saturday;
+  else hours = wash.openingHours.weekday;
+
+  if (!hours || hours.closed) return { status: 'closed', text: 'Zamknięte', color: 'text-rose-500' };
+
+  const [openH, openM] = hours.open.split(':').map(Number);
+  const [closeH, closeM] = hours.close.split(':').map(Number);
+  const openTime = openH * 60 + openM;
+  const closeTime = closeH * 60 + closeM;
+
+  if (time >= openTime && time < closeTime) {
+    const minutesToClose = closeTime - time;
+    if (minutesToClose <= 30) return { status: 'closing', text: `Zamyka się za ${minutesToClose} min`, color: 'text-gold' };
+    return { status: 'open', text: `Otwarte do ${hours.close}`, color: 'text-emerald-500' };
+  }
+
+  return { status: 'closed', text: 'Zamknięte', color: 'text-rose-500' };
+};
+
 function CarWashCard({ wash, onClick, userLocation }: { wash: CarWash, onClick: () => void, userLocation?: [number, number] | null }) {
+  const openingStatus = getOpeningStatus(wash);
   const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
     const R = 6371; // km
     const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -2181,9 +2218,17 @@ function CarWashCard({ wash, onClick, userLocation }: { wash: CarWash, onClick: 
         <div className="flex justify-between items-start">
           <h3 className="font-black text-white truncate italic uppercase tracking-tighter">{wash.name}</h3>
           <div className="flex flex-col items-end gap-1">
-            <div className="flex items-center gap-1 bg-black px-1.5 py-0.5 rounded-lg border border-gold/20">
-              <ThumbsUp className="w-3 h-3 fill-gold text-gold" />
-              <span className="text-[10px] font-black text-gold">{wash.likes}</span>
+            <div className="flex items-center gap-1.5">
+              {openingStatus && (
+                <div className={cn("text-[8px] font-black uppercase tracking-widest flex items-center gap-1", openingStatus.color)}>
+                  <Clock className="w-2.5 h-2.5" />
+                  {openingStatus.text}
+                </div>
+              )}
+              <div className="flex items-center gap-1 bg-black px-1.5 py-0.5 rounded-lg border border-gold/20">
+                <ThumbsUp className="w-3 h-3 fill-gold text-gold" />
+                <span className="text-[10px] font-black text-gold">{wash.likes}</span>
+              </div>
             </div>
             {userLocation && (
               <div className="flex items-center gap-1.5 text-gray-400 bg-white/5 px-2 py-1 rounded-lg border border-white/10 shadow-sm">
