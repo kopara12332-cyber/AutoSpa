@@ -71,21 +71,23 @@
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
 }
 
-.marker-pin.autodetailing.premium-fx {
+@keyframes pulse-autodetailing {
+  0% { transform: scale(1); box-shadow: 0 0 20px rgba(212, 175, 55, 0.6); }
+  50% { transform: scale(1.15); box-shadow: 0 0 35px rgba(212, 175, 55, 0.8), 0 0 15px #fff; }
+  100% { transform: scale(1); box-shadow: 0 0 20px rgba(212, 175, 55, 0.6); }
+}
+
+.marker-pin.autodetailing.promoted {
+  background: #FFD700;
   border: 2px solid #fff;
   box-shadow: 0 0 20px rgba(212, 175, 55, 0.6), 0 0 10px #fff;
-  animation: premium-pulse 2s infinite ease-in-out;
+  animation: pulse-autodetailing 2s infinite ease-in-out;
 }
 
 .marker-pin.autodetailing .marker-icon-inner {
+  transform: none; /* No rotation for autodetailing */
   color: #000;
 }
-
-.marker-pin.autodetailing.premium-fx .marker-icon-inner {
-  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
-}
-
-@keyframes pulse-bezdotykowa {
   0% { transform: rotate(-45deg) scale(1); box-shadow: 0 0 20px rgba(212, 175, 55, 0.6); }
   50% { transform: rotate(-45deg) scale(1.15); box-shadow: 0 0 35px rgba(212, 175, 55, 0.8), 0 0 15px #fff; }
   100% { transform: rotate(-45deg) scale(1); box-shadow: 0 0 20px rgba(212, 175, 55, 0.6); }
@@ -132,6 +134,8 @@
 
 .marker-pin.autodetailing.promoted {
   background: #FFD700;
+  border: 2px solid #fff;
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.6), 0 0 10px #fff;
   animation: pulse-autodetailing 2s infinite ease-in-out;
 }
 
