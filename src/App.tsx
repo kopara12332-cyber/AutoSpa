@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Map as MapIcon, List, Filter, Car, Star, Navigation, AlertCircle, TrendingDown, Store, LogIn, Mail, Lock, LogOut, Plus, CheckCircle2, MapPin, Info, ShieldCheck, XCircle, Edit3, Save, CreditCard, Clock, FileText, Settings, Phone, Eye, EyeOff, Camera, Image as ImageIcon, Trash2, Hand, Sparkles, LocateFixed, Loader2, ThumbsUp } from 'lucide-react';
+import { Map as MapIcon, List, Filter, Car, Star, Navigation, AlertCircle, TrendingDown, Store, LogIn, Mail, Lock, LogOut, Plus, CheckCircle2, MapPin, Info, ShieldCheck, XCircle, Edit3, Save, CreditCard, Clock, FileText, Settings, Phone, Eye, EyeOff, Camera, Image as ImageIcon, Trash2, Hand, Sparkles, LocateFixed, Loader2, ThumbsUp, CloudSun, Sun, CloudRain, Wind, Thermometer, Droplets } from 'lucide-react';
 import { mockCarWashes } from './data';
 import type { CarWash, CarWashType } from './data';
 import { clsx, type ClassValue } from 'clsx';
@@ -1061,7 +1061,8 @@ function AdminPanel({ submissions, onAccept, onReject, onUpdate, onBack }: { sub
           submissions.map(sub => (
             <div key={sub.id} className={cn(
               "bg-zinc-900 border p-4 rounded-2xl space-y-3",
-              sub.isEdit ? "border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.1)]" : "border-gold/20"
+              sub.isEdit ? "border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.1)]" : 
+              sub.isPromotionRequest ? "border-gold/50 shadow-[0_0_20px_rgba(212,175,55,0.15)]" : "border-gold/20"
             )}>
               <div className="flex justify-between items-start">
                 <div>
@@ -1069,15 +1070,23 @@ function AdminPanel({ submissions, onAccept, onReject, onUpdate, onBack }: { sub
                     <h3 className="font-black text-white uppercase italic">{sub.name}</h3>
                     <span className={cn(
                       "text-[7px] px-1.5 py-0.5 rounded-full font-black uppercase tracking-widest",
-                      sub.isEdit ? "bg-blue-500 text-white" : "bg-gold text-black"
+                      sub.isEdit ? "bg-blue-500 text-white" : 
+                      sub.isPromotionRequest ? "bg-luxury-gold text-black" : "bg-gold text-black"
                     )}>
-                      {sub.isEdit ? 'Edycja' : 'Nowy'}
+                      {sub.isEdit ? 'Edycja' : sub.isPromotionRequest ? `Premium (${sub.durationDays} dni)` : 'Nowy'}
                     </span>
                   </div>
                   <p className="text-[10px] text-gray-500">{sub.address}</p>
                 </div>
                 <span className="text-[8px] bg-gold/10 text-gold px-2 py-0.5 rounded-full font-black uppercase">{sub.type}</span>
               </div>
+
+              {sub.isPromotionRequest && (
+                <div className="bg-gold/5 p-3 rounded-xl border border-gold/20">
+                  <p className="text-[8px] text-gold font-black uppercase tracking-widest mb-1">Tekst Promocyjny:</p>
+                  <p className="text-[10px] text-white italic">"{sub.promotionText}"</p>
+                </div>
+              )}
               
               <div className="flex flex-wrap gap-1">
                 {[...(sub.payment || []), ...(sub.equipment || []), ...(sub.services || [])].slice(0, 6).map((s: string) => (
@@ -1112,6 +1121,109 @@ function AdminPanel({ submissions, onAccept, onReject, onUpdate, onBack }: { sub
           ))
         )}
       </div>
+    </div>
+  );
+}
+
+function PromotionModal({ wash, onCancel, onSuccess }: { wash: CarWash, onCancel: () => void, onSuccess: (submission: any) => void }) {
+  const [duration, setDuration] = useState<7 | 30>(7);
+  const [promoText, setPromoText] = useState(wash.promotionText || '');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSuccess({
+      ...wash,
+      isPromoted: true,
+      promotionText: promoText,
+      isPromotionRequest: true,
+      durationDays: duration,
+      status: 'pending'
+    });
+  };
+
+  return (
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="flex items-center gap-3 border-b border-gold/20 pb-4">
+        <button onClick={onCancel} className="text-gray-500 hover:text-white">
+          <Navigation className="w-6 h-6 rotate-180" />
+        </button>
+        <div>
+          <h2 className="text-xl font-black text-gold uppercase italic tracking-tighter">Wykup Wyróżnienie</h2>
+          <p className="text-[10px] text-gray-500 uppercase font-black">{wash.name}</p>
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-8">
+        <div className="space-y-4">
+          <h3 className="text-[10px] font-black text-gold uppercase tracking-[0.2em] flex items-center gap-2 opacity-70">
+            <CreditCard className="w-3 h-3" /> Wybierz Pakiet
+          </h3>
+          <div className="grid grid-cols-2 gap-4">
+            <button
+              type="button"
+              onClick={() => setDuration(7)}
+              className={cn(
+                "p-5 rounded-3xl border-2 transition-all text-center space-y-1",
+                duration === 7 ? "bg-gold/10 border-gold shadow-[0_0_20px_rgba(212,175,55,0.1)]" : "bg-zinc-900 border-zinc-800 text-gray-500"
+              )}
+            >
+              <p className={cn("text-lg font-black italic uppercase", duration === 7 ? "text-white" : "text-gray-400")}>7 Dni</p>
+              <p className="text-[10px] font-bold opacity-60">Pakiet Startowy</p>
+              <p className="text-sm font-black text-gold mt-2">49.00 PLN</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => setDuration(30)}
+              className={cn(
+                "p-5 rounded-3xl border-2 transition-all text-center space-y-1 relative overflow-hidden",
+                duration === 30 ? "bg-gold/10 border-gold shadow-[0_0_20px_rgba(212,175,55,0.1)]" : "bg-zinc-900 border-zinc-800 text-gray-500"
+              )}
+            >
+              <div className="absolute top-0 right-0 bg-gold text-black text-[7px] font-black px-2 py-0.5 rounded-bl-lg uppercase tracking-tighter">Polecane</div>
+              <p className={cn("text-lg font-black italic uppercase", duration === 30 ? "text-white" : "text-gray-400")}>30 Dni</p>
+              <p className="text-[10px] font-bold opacity-60">Pełny Miesiąc</p>
+              <p className="text-sm font-black text-gold mt-2">149.00 PLN</p>
+            </button>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="text-[10px] font-black text-gold uppercase tracking-[0.2em] flex items-center gap-2 opacity-70">
+            <Sparkles className="w-3 h-3" /> Tekst Promocyjny
+          </h3>
+          <input 
+            className="w-full bg-black border-2 border-zinc-800 rounded-2xl py-4 px-4 text-white focus:border-gold outline-none text-xs"
+            placeholder="np. -20% na mycie kompletu do końca dnia!"
+            value={promoText}
+            onChange={e => setPromoText(e.target.value)}
+            maxLength={50}
+          />
+          <p className="text-[8px] text-gray-600 uppercase font-bold tracking-widest text-right">
+            {promoText.length} / 50 znaków
+          </p>
+        </div>
+
+        <div className="bg-zinc-900/50 p-6 rounded-[2.5rem] border border-white/5 space-y-4">
+          <h3 className="text-[10px] font-black text-white uppercase tracking-widest italic">Zalety Wyróżnienia</h3>
+          <div className="grid grid-cols-1 gap-2">
+            {[
+              "Złoty, pulsujący marker na mapie",
+              "Pierwsze miejsce w wynikach wyszukiwania",
+              "Złota ramka i etykieta Premium na liście",
+              "Możliwość dodania własnego hasła promocyjnego"
+            ].map((text, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <CheckCircle2 className="w-3.5 h-3.5 text-gold" />
+                <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wide">{text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <button type="submit" className="w-full py-5 bg-luxury-gold text-black font-black uppercase italic rounded-2xl shadow-2xl shadow-gold/30 active:scale-95 transition-all flex items-center justify-center gap-3">
+          <CreditCard className="w-5 h-5" /> Zapłać i aktywuj
+        </button>
+      </form>
     </div>
   );
 }
@@ -1201,6 +1313,164 @@ function OwnerAnalytics({ wash, onBack }: { wash: CarWash, onBack: () => void })
   );
 }
 
+function WeatherModal({ onBack, userLocation }: { onBack: () => void, userLocation: [number, number] | null }) {
+  const [weatherData, setWeatherData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchWeather = async () => {
+      const lat = userLocation ? userLocation[0] : 52.2297;
+      const lon = userLocation ? userLocation[1] : 21.0122;
+      
+      try {
+        const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weathercode,temperature_2m_max,precipitation_probability_max&current_weather=true&timezone=auto`);
+        const data = await response.json();
+        setWeatherData(data);
+      } catch (error) {
+        console.error("Weather fetch error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchWeather();
+  }, [userLocation]);
+
+  const getWeatherIcon = (code: number) => {
+    if (code <= 1) return <Sun className="w-6 h-6 text-gold" />;
+    if (code <= 3) return <CloudSun className="w-6 h-6 text-gray-400" />;
+    if (code >= 51) return <CloudRain className="w-6 h-6 text-blue-400" />;
+    return <Sun className="w-6 h-6 text-gold" />;
+  };
+
+  const getWeatherDesc = (code: number) => {
+    if (code <= 1) return { label: 'Słonecznie', desc: 'Idealne na detailing' };
+    if (code <= 3) return { label: 'Zachmurzenie', desc: 'Dobre warunki' };
+    if (code >= 51) return { label: 'Opady', desc: 'Odradzamy mycie' };
+    return { label: 'Słonecznie', desc: 'Dobre warunki' };
+  };
+
+  if (loading) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <Loader2 className="w-10 h-10 text-gold animate-spin" />
+      </div>
+    );
+  }
+
+  const current = weatherData?.current_weather;
+  const daily = weatherData?.daily;
+  
+  // Simple Wash Index calculation: 100 - (precipitation probability * 1.5)
+  const washIndex = Math.max(0, 100 - (daily?.precipitation_probability_max[0] || 0) * 1.5);
+
+  return (
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="flex items-center gap-3 border-b border-gold/20 pb-4">
+        <button onClick={onBack} className="text-gray-500 hover:text-white">
+          <Navigation className="w-6 h-6 rotate-180" />
+        </button>
+        <div>
+          <h2 className="text-xl font-black text-gold uppercase italic tracking-tighter">Pogoda na mycie</h2>
+          <p className="text-[10px] text-gray-500 uppercase font-black">
+            {userLocation ? 'Realne dane dla Twojej lokalizacji' : 'Warszawa (brak GPS)'}
+          </p>
+        </div>
+      </div>
+
+      <div className="bg-gold/5 p-6 rounded-[2.5rem] border border-gold/30 relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-4 opacity-10">
+          <Sun className="w-20 h-20 text-gold animate-spin-slow" />
+        </div>
+        <div className="relative z-10">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="p-4 bg-gold rounded-3xl shadow-lg shadow-gold/20">
+              <Sun className="w-8 h-8 text-black" />
+            </div>
+            <div>
+              <p className="text-4xl font-black text-white italic">{Math.round(washIndex)}<span className="text-lg text-gold ml-1">/100</span></p>
+              <p className="text-[10px] text-gold font-black uppercase tracking-widest">
+                Wash Index ({washIndex > 70 ? 'Excellent' : washIndex > 40 ? 'Good' : 'Poor'})
+              </p>
+            </div>
+          </div>
+          <p className="text-sm text-gray-300 font-medium leading-relaxed">
+            {washIndex > 70 
+              ? 'Aktualnie panują idealne warunki do pielęgnacji auta. Brak opadów gwarantuje długotrwały efekt.'
+              : washIndex > 40
+              ? 'Warunki są poprawne, ale istnieje ryzyko lekkich opadów. Rozważ szybkie mycie bez woskowania.'
+              : 'Odradzamy kompleksowe mycie. Wysokie prawdopodobieństwo opadów w najbliższym czasie.'}
+          </p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="bg-zinc-900/50 p-4 rounded-3xl border border-white/5 flex items-center gap-3">
+          <div className="p-2 bg-blue-500/10 rounded-xl">
+            <Droplets className="w-4 h-4 text-blue-400" />
+          </div>
+          <div>
+            <p className="text-[8px] text-gray-500 font-black uppercase tracking-widest">Szansa opadów</p>
+            <p className="text-xs font-black text-white">{daily?.precipitation_probability_max[0]}%</p>
+          </div>
+        </div>
+        <div className="bg-zinc-900/50 p-4 rounded-3xl border border-white/5 flex items-center gap-3">
+          <div className="p-2 bg-orange-500/10 rounded-xl">
+            <Wind className="w-4 h-4 text-orange-400" />
+          </div>
+          <div>
+            <p className="text-[8px] text-gray-500 font-black uppercase tracking-widest">Wiatr</p>
+            <p className="text-xs font-black text-white">{current?.windspeed} km/h</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] ml-2">Prognoza na najbliższe dni</h3>
+        {daily?.time.slice(0, 4).map((time: string, i: number) => {
+          const code = daily.weathercode[i];
+          const info = getWeatherDesc(code);
+          const score = Math.max(0, 100 - daily.precipitation_probability_max[i] * 1.5);
+          return (
+            <div key={i} className="bg-zinc-900/50 p-4 rounded-2xl border border-white/5 flex items-center justify-between group hover:border-gold/30 transition-all">
+              <div className="flex items-center gap-4">
+                <span className="w-8 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                  {i === 0 ? 'Dziś' : new Date(time).toLocaleDateString('pl-PL', { weekday: 'short' })}
+                </span>
+                <div className="p-2 bg-black rounded-xl">
+                  {getWeatherIcon(code)}
+                </div>
+                <div>
+                  <p className="text-xs font-black text-white uppercase italic">{info.label}</p>
+                  <p className="text-[8px] text-gray-500 font-bold uppercase tracking-widest">{info.desc}</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-black text-gold italic">{Math.round(daily.temperature_2m_max[i])}°C</p>
+                <div className="w-16 h-1 bg-black rounded-full mt-1 overflow-hidden">
+                  <div className={cn("h-full transition-all", score > 70 ? "bg-gold" : score > 40 ? "bg-orange-400" : "bg-rose-500")} style={{ width: `${score}%` }} />
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="p-6 bg-zinc-900/80 rounded-[2.5rem] border border-white/5 space-y-4">
+        <div className="flex items-center gap-2 text-gold">
+          <Info className="w-4 h-4" />
+          <h4 className="text-[10px] font-black uppercase tracking-widest">Wskazówka Premium</h4>
+        </div>
+        <p className="text-[11px] text-gray-400 leading-relaxed font-medium">
+          {washIndex > 70 
+            ? 'Przy tak dobrych warunkach polecamy aplikację twardego wosku lub szybkiego detailera dla maksymalnego połysku.'
+            : 'Zalecamy użycie osuszacza lakieru po myciu, aby uniknąć zacieków (water spots) w razie nagłej zmiany pogody.'}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [activeView, setActiveView] = useState<View>('map');
   const [selectedType, setSelectedType] = useState<CarWashType | 'all'>('all');
@@ -1210,6 +1480,8 @@ function App() {
   const [isAddingWash, setIsAddingWash] = useState(false);
   const [editingWash, setEditingWash] = useState<any | null>(null);
   const [viewingAnalytics, setViewingAnalytics] = useState<CarWash | null>(null);
+  const [viewingWeather, setViewingWeather] = useState(false);
+  const [promotingWash, setPromotingWash] = useState<CarWash | null>(null);
   const [carWashes, setCarWashes] = useState<CarWash[]>(mockCarWashes);
   const [showOnboarding, setShowOnboarding] = useState(() => !localStorage.getItem('autospa_onboarding_complete'));
   const [likedWashes, setLikedWashes] = useState<string[]>([]);
@@ -1336,16 +1608,36 @@ function App() {
   };
 
   const handleAddWashSuccess = (newSubmission: any) => {
-    setPendingWashes(prev => [newSubmission, ...prev]);
+    if (newSubmission.isPromotionRequest) {
+      // Automatycznie potwierdź wyróżnienie (płatność zasymulowana jako sukces)
+      setCarWashes(prev => prev.map(w => w.id === newSubmission.id ? { 
+        ...w, 
+        isPromoted: true, 
+        promotionText: newSubmission.promotionText 
+      } : w));
+      alert('Wyróżnienie zostało aktywowane pomyślnie! Twój punkt jest teraz promowany.');
+    } else {
+      setPendingWashes(prev => [newSubmission, ...prev]);
+      let message = 'Twoje zgłoszenie zostało wysłane do weryfikacji!';
+      if (newSubmission.isEdit) message = 'Zmiany zostały wysłane do akceptacji przez administratora!';
+      alert(message);
+    }
+    
     setIsAddingWash(false);
     setEditingWash(null);
-    alert(newSubmission.isEdit ? 'Zmiany zostały wysłane do akceptacji przez administratora!' : 'Twoje zgłoszenie zostało wysłane do weryfikacji!');
+    setPromotingWash(null);
   };
 
   const handleApproveWash = (id: string) => {
     const washToApprove = pendingWashes.find(w => w.id === id);
     if (washToApprove) {
-      if (washToApprove.isEdit) {
+      if (washToApprove.isPromotionRequest) {
+        setCarWashes(prev => prev.map(w => w.id === washToApprove.id ? { 
+          ...w, 
+          isPromoted: true, 
+          promotionText: washToApprove.promotionText 
+        } : w));
+      } else if (washToApprove.isEdit) {
         setCarWashes(prev => prev.map(w => w.id === washToApprove.id ? { ...washToApprove, status: 'approved' } : w));
       } else {
         setCarWashes(prev => [{...washToApprove, status: 'approved'}, ...prev]);
@@ -1564,6 +1856,16 @@ function App() {
         />
       )}
 
+      {/* Weather Modal Overlay */}
+      {viewingWeather && (
+        <div className="fixed inset-0 z-[4000] bg-black animate-slide-up overflow-y-auto no-scrollbar p-6">
+          <WeatherModal 
+            onBack={() => setViewingWeather(false)} 
+            userLocation={userLocation}
+          />
+        </div>
+      )}
+
       {/* App Header (Midnight Gold Style) */}
       <header className="bg-gold-gradient text-white p-4 shadow-lg z-20 flex flex-col gap-4 border-b border-white/10">
         <div className="flex justify-between items-center px-2">
@@ -1586,6 +1888,13 @@ function App() {
              </div>
           </div>
           <div className="flex gap-1">
+            <button 
+              onClick={() => setViewingWeather(true)}
+              className="p-2 hover:bg-white/10 rounded-full transition-colors text-gold flex items-center gap-1 group"
+              title="Pogoda na mycie"
+            >
+              <CloudSun className="w-5 h-5 group-active:scale-90 transition-transform" />
+            </button>
             <button 
               onClick={() => setShowNearestSelector(true)}
               className="p-2 hover:bg-white/10 rounded-full transition-colors text-gold flex items-center gap-1 group"
@@ -2286,6 +2595,12 @@ function App() {
                 initialData={editingWash}
                 userEmail={user.email}
               />
+            ) : promotingWash ? (
+              <PromotionModal 
+                wash={promotingWash} 
+                onCancel={() => setPromotingWash(null)} 
+                onSuccess={handleAddWashSuccess} 
+              />
             ) : viewingAnalytics ? (
               <OwnerAnalytics 
                 wash={viewingAnalytics} 
@@ -2343,6 +2658,15 @@ function App() {
                             >
                               <Edit3 className="w-4 h-4" />
                             </button>
+                            {!wash.isPromoted && (
+                              <button 
+                                onClick={() => setPromotingWash(wash)}
+                                className="p-2.5 bg-gold/10 border border-gold rounded-xl text-gold hover:bg-gold/20 transition-all active:scale-95 animate-pulse"
+                                title="Promuj"
+                              >
+                                <Star className="w-4 h-4 fill-current" />
+                              </button>
+                            )}
                           </div>
                         </div>
                       ))}
@@ -2387,9 +2711,25 @@ function App() {
                   </div>
                 </div>
 
-                <button className="w-full py-4 bg-zinc-900 text-gold border border-gold/50 rounded-2xl font-black uppercase italic tracking-widest shadow-xl hover:bg-zinc-800 transition-all active:scale-95">
-                  Wykup Wyróżnienie
-                </button>
+                <div className="bg-gold/5 p-6 rounded-[2.5rem] border border-gold/30 space-y-4 relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 p-3 opacity-20">
+                    <Star className="w-12 h-12 text-gold animate-pulse" />
+                  </div>
+                  <h3 className="text-sm font-black text-gold uppercase italic tracking-widest">Zwiększ zasięgi</h3>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-relaxed">
+                    Wykup Wyróżnienie, aby Twój punkt był widoczny na samej górze listy i posiadał złoty, pulsujący marker na mapie.
+                  </p>
+                  <button 
+                    onClick={() => {
+                      const firstWash = carWashes.find(w => w.ownerEmail === user?.email && !w.isPromoted);
+                      if (firstWash) setPromotingWash(firstWash);
+                      else alert("Wszystkie Twoje punkty są już promowane lub nie masz jeszcze żadnego punktu.");
+                    }}
+                    className="w-full py-4 bg-luxury-gold text-black rounded-2xl font-black uppercase italic tracking-widest shadow-xl hover:scale-[1.02] transition-all active:scale-95"
+                  >
+                    Wykup Wyróżnienie
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -2606,6 +2946,11 @@ function CarWashCard({ wash, onClick, userLocation }: { wash: CarWash, onClick: 
             </span>
           )}
         </div>
+        {wash.isPromoted && wash.promotionText && (
+          <div className="mt-2 p-2 bg-gold/10 border border-gold/30 rounded-xl animate-in slide-in-from-left duration-500">
+            <p className="text-[9px] text-gold italic font-bold">"{wash.promotionText}"</p>
+          </div>
+        )}
       </div>
     </div>
   );
