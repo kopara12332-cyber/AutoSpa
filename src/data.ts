@@ -28,6 +28,7 @@ export interface CarWash {
   description?: string;
   services?: string[];
   images?: string[];
+  rating?: number;
 }
 
 export const mockCarWashes: CarWash[] = [
