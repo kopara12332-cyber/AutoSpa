@@ -1201,6 +1201,58 @@ function App() {
     window.open(url, '_blank');
   };
 
+  const handleReportQueue = (washId: string, status: 'brak' | 'mała' | 'duża') => {
+    if (!userLocation) {
+      alert("Musimy znać Twoją lokalizację, abyś mógł zgłosić kolejkę.");
+      return;
+    }
+
+    const wash = carWashes.find(w => w.id === washId);
+    if (!wash) return;
+
+    // Oblicz dystans w metrach
+    const R = 6371e3; // promień Ziemi w metrach
+    const φ1 = userLocation[0] * Math.PI/180;
+    const φ2 = wash.lat * Math.PI/180;
+    const Δφ = (wash.lat-userLocation[0]) * Math.PI/180;
+    const Δλ = (wash.lng-userLocation[1]) * Math.PI/180;
+
+    const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+              Math.cos(φ1) * Math.cos(φ2) *
+              Math.sin(Δλ/2) * Math.sin(Δλ/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const distance = R * c;
+
+    if (distance > 50) {
+      alert(`Jesteś za daleko (${Math.round(distance)}m). Podejdź bliżej (max 50m), aby zgłosić status.`);
+      return;
+    }
+
+    // Proste zabezpieczenie przed spamem (cooldown 2 min)
+    if (wash.userReports && wash.userReports.userId === (user?.id || 'anonymous') && (Date.now() - wash.userReports.timestamp < 2 * 60 * 1000)) {
+      alert("Twoje zgłoszenie zostało już wysłane. Możesz dodać kolejne za chwilę.");
+      return;
+    }
+
+    // Aktualizuj stan
+    setCarWashes(prev => prev.map(w => {
+      if (w.id === washId) {
+        return {
+          ...w,
+          queueStatus: status,
+          userReports: {
+            status,
+            timestamp: Date.now(),
+            userId: user?.id || 'anonymous'
+          }
+        };
+      }
+      return w;
+    }));
+
+    alert("Dziękujemy! Twoje zgłoszenie zostało dodane i jest widoczne dla innych.");
+  };
+
   const handleUpdateSubmission = (updatedWash: any) => {
     setPendingWashes(prev => prev.map(w => w.id === updatedWash.id ? updatedWash : w));
   };
@@ -1830,19 +1882,56 @@ function App() {
               </div>
 
               {selectedWash.type === 'bezdotykowa' && (
-                <div className="space-y-3">
-                  <h3 className="font-black text-gold text-xs uppercase tracking-[0.2em]">Status "na żywo"</h3>
-                  <div className="flex gap-2">
-                     <button className="flex-1 py-3 bg-zinc-900 text-white border-2 border-zinc-800 rounded-2xl text-xs font-black uppercase hover:border-gold transition-all active:scale-95">
+                <div className="space-y-4 bg-zinc-900/50 p-5 rounded-[2.5rem] border border-white/5 relative overflow-hidden">
+                  <div className="flex justify-between items-center relative z-10">
+                    <h3 className="font-black text-gold text-[10px] uppercase tracking-[0.2em] flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      Status Kolejki na żywo
+                    </h3>
+                    {selectedWash.userReports && (Date.now() - selectedWash.userReports.timestamp < 30 * 60 * 1000) && (
+                      <span className="text-[8px] font-black text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 animate-in fade-in duration-500">
+                        Potwierdzone {Math.floor((Date.now() - selectedWash.userReports.timestamp) / 60000)} min temu
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex gap-2 relative z-10">
+                     <button 
+                       onClick={() => handleReportQueue(selectedWash.id, 'brak')}
+                       className={cn(
+                         "flex-1 py-3 rounded-2xl text-[10px] font-black uppercase transition-all active:scale-95 border-2",
+                         selectedWash.queueStatus === 'brak' 
+                           ? "bg-emerald-500 text-black border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]" 
+                           : "bg-zinc-900 text-gray-400 border-zinc-800 hover:border-emerald-500/50"
+                       )}
+                     >
                        Brak
                      </button>
-                     <button className="flex-1 py-3 bg-zinc-900 text-white border-2 border-zinc-800 rounded-2xl text-xs font-black uppercase hover:border-gold transition-all active:scale-95">
+                     <button 
+                       onClick={() => handleReportQueue(selectedWash.id, 'mała')}
+                       className={cn(
+                         "flex-1 py-3 rounded-2xl text-[10px] font-black uppercase transition-all active:scale-95 border-2",
+                         selectedWash.queueStatus === 'mała' 
+                           ? "bg-gold text-black border-gold shadow-[0_0_15px_rgba(212,175,55,0.3)]" 
+                           : "bg-zinc-900 text-gray-400 border-zinc-800 hover:border-gold/50"
+                       )}
+                     >
                        Mała
                      </button>
-                     <button className="flex-1 py-3 bg-zinc-900 text-white border-2 border-zinc-800 rounded-2xl text-xs font-black uppercase hover:border-gold transition-all active:scale-95">
+                     <button 
+                       onClick={() => handleReportQueue(selectedWash.id, 'duża')}
+                       className={cn(
+                         "flex-1 py-3 rounded-2xl text-[10px] font-black uppercase transition-all active:scale-95 border-2",
+                         selectedWash.queueStatus === 'duża' 
+                           ? "bg-rose-500 text-black border-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.3)]" 
+                           : "bg-zinc-900 text-gray-400 border-zinc-800 hover:border-rose-500/50"
+                       )}
+                     >
                        Duża
                      </button>
                   </div>
+                  <p className="text-[8px] text-gray-500 text-center font-bold uppercase tracking-widest opacity-60">
+                    Zgłoś status będąc na miejscu (max 50m)
+                  </p>
                 </div>
               )}
 
@@ -2219,6 +2308,12 @@ function CarWashCard({ wash, onClick, userLocation }: { wash: CarWash, onClick: 
           <h3 className="font-black text-white truncate italic uppercase tracking-tighter">{wash.name}</h3>
           <div className="flex flex-col items-end gap-1">
             <div className="flex items-center gap-1.5">
+              {wash.userReports && (Date.now() - wash.userReports.timestamp < 30 * 60 * 1000) && (
+                <div className="flex items-center gap-1 bg-emerald-500/10 px-1.5 py-0.5 rounded-lg border border-emerald-500/20 animate-pulse">
+                  <CheckCircle2 className="w-2.5 h-2.5 text-emerald-500" />
+                  <span className="text-[7px] font-black text-emerald-500 uppercase tracking-widest">LIVE</span>
+                </div>
+              )}
               {openingStatus && (
                 <div className={cn("text-[8px] font-black uppercase tracking-widest flex items-center gap-1", openingStatus.color)}>
                   <Clock className="w-2.5 h-2.5" />

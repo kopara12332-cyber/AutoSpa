@@ -30,6 +30,11 @@ export interface CarWash {
   images?: string[];
   rating?: number;
   ownerEmail?: string;
+  userReports?: {
+    status: 'brak' | 'mała' | 'duża';
+    timestamp: number;
+    userId: string;
+  };
 }
 
 export const mockCarWashes: CarWash[] = [
