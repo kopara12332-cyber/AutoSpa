@@ -77,6 +77,15 @@
   100% { transform: scale(1); box-shadow: 0 0 20px rgba(212, 175, 55, 0.6); }
 }
 
+@keyframes slide-up {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
 .marker-pin:hover {
   z-index: 1000;
   filter: brightness(1.3);

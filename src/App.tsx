@@ -1197,8 +1197,11 @@ function App() {
         )}
 
         {activeView === 'detail' && selectedWash && (
-          <div className="bg-black min-h-full">
-            <div className="relative h-64 bg-zinc-900 overflow-hidden">
+          <div className="fixed inset-0 z-[2000] bg-black animate-slide-up overflow-y-auto no-scrollbar">
+            {/* Drag Handle for visual cue */}
+            <div className="absolute top-2 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-white/20 rounded-full z-[2010] pointer-events-none"></div>
+            
+            <div className="relative h-64 bg-zinc-900 overflow-hidden shrink-0">
                {selectedWash.images && selectedWash.images.length > 0 ? (
                  <div className="flex h-full overflow-x-auto snap-x scrollbar-hide no-scrollbar">
                    {selectedWash.images.map((img, idx) => (
@@ -1214,9 +1217,9 @@ function App() {
                
                <button 
                  onClick={() => setActiveView('map')}
-                 className="absolute top-4 left-4 p-2 bg-black/40 hover:bg-black/60 rounded-full text-white backdrop-blur border border-white/20 z-10"
+                 className="absolute top-4 left-4 p-2 bg-black/60 hover:bg-black/80 rounded-xl text-white backdrop-blur border border-white/20 z-10 transition-all active:scale-90"
                >
-                 <Navigation className="w-5 h-5 rotate-180" />
+                 <XCircle className="w-6 h-6" />
                </button>
 
                {selectedWash.images && selectedWash.images.length > 1 && (
@@ -1369,7 +1372,17 @@ function App() {
         )}
 
         {activeView === 'b2b' && (
-          <div className="p-6 space-y-6 bg-black min-h-full font-medium">
+          <div className="fixed inset-0 z-[2000] bg-black animate-slide-up overflow-y-auto no-scrollbar p-6 space-y-6 font-medium pb-24">
+            <div className="absolute top-2 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-white/20 rounded-full z-[2010] pointer-events-none"></div>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-black text-gold uppercase italic tracking-tighter">Panel Biznesowy</h2>
+              <button 
+                onClick={() => setActiveView('map')}
+                className="p-2 bg-zinc-900 rounded-xl text-gray-500 hover:text-white transition-colors"
+              >
+                <XCircle className="w-6 h-6" />
+              </button>
+            </div>
             {isAdmin ? (
               <AdminPanel 
                 submissions={pendingWashes} 
