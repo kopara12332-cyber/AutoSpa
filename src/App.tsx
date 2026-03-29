@@ -980,6 +980,7 @@ function App() {
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
+  const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [showNearestSelector, setShowNearestSelector] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState({
@@ -1052,6 +1053,17 @@ function App() {
   };
 
   useEffect(() => {
+    // Pobierz lokalizację użytkownika na starcie
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation([position.coords.latitude, position.coords.longitude]);
+        },
+        (error) => console.error("Geolocation error:", error),
+        { enableHighAccuracy: true }
+      );
+    }
+
     // Sprawdź aktualną sesję
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
@@ -1451,9 +1463,19 @@ function App() {
         )}
 
         {activeView === 'list' && (
-          <div className="p-4 space-y-4 bg-black">
-            {filteredWashes.map(wash => (
-              <CarWashCard key={wash.id} wash={wash} onClick={() => handleWashClick(wash)} />
+          <div className="p-4 space-y-4 bg-black no-scrollbar overflow-y-auto">
+            {filteredWashes.map((wash, index) => (
+              <div 
+                key={wash.id} 
+                className="animate-fade-in-up" 
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
+                <CarWashCard 
+                  wash={wash} 
+                  onClick={() => handleWashClick(wash)} 
+                  userLocation={userLocation}
+                />
+              </div>
             ))}
           </div>
         )}
@@ -1499,25 +1521,41 @@ function App() {
             <div className="p-6 space-y-6">
               <div className="flex justify-between items-center">
                  <div className="flex items-center gap-3">
-                    <button 
-                      onClick={() => handleLike(selectedWash.id)}
-                      disabled={likedWashes.includes(selectedWash.id)}
-                      className={cn(
-                        "relative p-3 rounded-2xl border-2 transition-all group",
-                        likedWashes.includes(selectedWash.id) 
-                          ? "bg-gold border-gold text-black" 
-                          : "bg-zinc-900 border-zinc-800 text-gold hover:border-gold"
-                      )}
-                    >
-                      <ThumbsUp className={cn(
-                        "w-6 h-6", 
-                        likedWashes.includes(selectedWash.id) && "fill-black",
-                        animatingLike === selectedWash.id && "animate-thumb-pop"
-                      )} />
-                      {animatingLike === selectedWash.id && (
-                        <ThumbsUp className="absolute inset-0 w-6 h-6 m-auto text-gold fill-gold animate-float-up pointer-events-none" />
-                      )}
-                    </button>
+                    <div className="relative group/like">
+                      <button 
+                        onClick={() => handleLike(selectedWash.id)}
+                        disabled={likedWashes.includes(selectedWash.id)}
+                        className={cn(
+                          "relative p-3 rounded-2xl border-2 transition-all active:scale-90",
+                          likedWashes.includes(selectedWash.id) 
+                              ? "bg-gold border-gold text-black shadow-[0_0_15px_rgba(212,175,55,0.3)]" 
+                              : "bg-zinc-900 border-zinc-800 text-gold hover:border-gold animate-hint-pulse"
+                        )}
+                      >
+                        <ThumbsUp className={cn(
+                           "w-6 h-6", 
+                           likedWashes.includes(selectedWash.id) ? "fill-black scale-110 text-black" : "text-gold animate-icon-wiggle",
+                           animatingLike === selectedWash.id && "animate-thumb-pop"
+                         )} style={{ 
+                           opacity: 1, 
+                           visibility: 'visible',
+                           position: 'relative',
+                           zIndex: 10
+                         }} />
+                         {animatingLike === selectedWash.id && (
+                           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                             <Sparkles className="w-8 h-8 text-gold animate-sparkle-burst" />
+                           </div>
+                         )}
+                        
+                        {!likedWashes.includes(selectedWash.id) && (
+                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-luxury-gold text-black text-[10px] font-black py-1.5 px-3 rounded-xl opacity-0 group-hover/like:opacity-100 transition-all pointer-events-none whitespace-nowrap shadow-xl border border-white/20">
+                              Polub ten punkt!
+                              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-luxury-gold rotate-45" />
+                            </div>
+                          )}
+                      </button>
+                    </div>
                     <div>
                       <span className="font-black text-2xl text-gold block leading-none">{selectedWash.likes}</span>
                       <span className="text-gray-500 text-[9px] font-black uppercase tracking-widest">Polubień</span>
@@ -1796,7 +1834,19 @@ function NavButton({ active, onClick, icon, label }: { active: boolean, onClick:
   );
 }
 
-function CarWashCard({ wash, onClick }: { wash: CarWash, onClick: () => void }) {
+function CarWashCard({ wash, onClick, userLocation }: { wash: CarWash, onClick: () => void, userLocation?: [number, number] | null }) {
+  const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const R = 6371; // km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const d = R * c;
+    return d < 1 ? `${(d * 1000).toFixed(0)} m` : `${d.toFixed(1)} km`;
+  };
   const getIconStyles = (type: CarWashType) => {
     switch (type) {
       case 'bezdotykowa':
@@ -1853,9 +1903,19 @@ function CarWashCard({ wash, onClick }: { wash: CarWash, onClick: () => void }) 
       <div className="flex-1 min-w-0">
         <div className="flex justify-between items-start">
           <h3 className="font-black text-white truncate italic uppercase tracking-tighter">{wash.name}</h3>
-          <div className="flex items-center gap-1 bg-black px-1.5 py-0.5 rounded-lg border border-gold/20">
-            <ThumbsUp className="w-3 h-3 fill-gold text-gold" />
-            <span className="text-[10px] font-black text-gold">{wash.likes}</span>
+          <div className="flex flex-col items-end gap-1">
+            <div className="flex items-center gap-1 bg-black px-1.5 py-0.5 rounded-lg border border-gold/20">
+              <ThumbsUp className="w-3 h-3 fill-gold text-gold" />
+              <span className="text-[10px] font-black text-gold">{wash.likes}</span>
+            </div>
+            {userLocation && (
+              <div className="flex items-center gap-1 text-gray-500 bg-white/5 px-1.5 py-0.5 rounded-lg border border-white/5">
+                <Navigation className="w-2.5 h-2.5 rotate-45" />
+                <span className="text-[8px] font-black uppercase tracking-widest">
+                  {getDistance(userLocation[0], userLocation[1], wash.lat, wash.lng)}
+                </span>
+              </div>
+            )}
           </div>
         </div>
         <p className="text-[10px] text-gray-500 truncate mb-2 font-medium">{wash.address}</p>
