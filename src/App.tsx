@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Map as MapIcon, List, Search, Filter, Car, Star, Navigation, AlertCircle, TrendingDown, Store, LogIn, Mail, Lock, LogOut, Plus, CheckCircle2, MapPin, Info, ShieldCheck, XCircle, Edit3, Save, CreditCard, Clock, FileText, Settings, Phone, Eye, EyeOff, Camera, Image as ImageIcon, Trash2 } from 'lucide-react';
+import { Map as MapIcon, List, Search, Filter, Car, Star, Navigation, AlertCircle, TrendingDown, Store, LogIn, Mail, Lock, LogOut, Plus, CheckCircle2, MapPin, Info, ShieldCheck, XCircle, Edit3, Save, CreditCard, Clock, FileText, Settings, Phone, Eye, EyeOff, Camera, Image as ImageIcon, Trash2, Hand, Sparkles } from 'lucide-react';
 import { mockCarWashes } from './data';
 import type { CarWash, CarWashType } from './data';
 import { clsx, type ClassValue } from 'clsx';
@@ -1439,27 +1439,32 @@ function CarWashCard({ wash, onClick }: { wash: CarWash, onClick: () => void }) 
       case 'bezdotykowa':
         return {
           container: "bg-luxury-gold rounded-[50%_50%_50%_0] -rotate-45 border-2 border-black shadow-lg",
-          icon: "rotate-45 text-black"
+          icon: "rotate-45 text-black",
+          Component: Car
         };
       case 'reczna':
         return {
           container: "bg-black rounded-sm rotate-45 border-[3px] border-luxury-gold shadow-[0_0_10px_rgba(212,175,55,0.4)]",
-          icon: "-rotate-45 text-gold"
+          icon: "-rotate-45 text-gold",
+          Component: Hand
         };
       case 'autodetailing':
         return {
           container: "bg-luxury-gold rounded-[30%_70%_30%_70%/70%_30%_70%_30%] border-2 border-white animate-[premium-pulse_2s_infinite_ease-in-out] shadow-[0_0_20px_rgba(212,175,55,0.6),0_0_10px_#fff]",
-          icon: "text-black"
+          icon: "text-black",
+          Component: Sparkles
         };
       default:
         return {
           container: "bg-zinc-800 rounded-2xl",
-          icon: "text-white"
+          icon: "text-white",
+          Component: Car
         };
     }
   };
 
   const styles = getIconStyles(wash.type);
+  const IconComponent = styles.Component;
 
   return (
     <div 
@@ -1474,7 +1479,7 @@ function CarWashCard({ wash, onClick }: { wash: CarWash, onClick: () => void }) 
           "w-12 h-12 flex items-center justify-center transition-all",
           styles.container
         )}>
-          <Car className={cn("w-6 h-6", styles.icon)} />
+          <IconComponent className={cn("w-6 h-6", styles.icon)} />
         </div>
       </div>
       <div className="flex-1 min-w-0">
