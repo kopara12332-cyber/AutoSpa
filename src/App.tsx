@@ -988,8 +988,8 @@ function App() {
     minLikes: 0,
     payment: [] as string[],
     equipment: [] as string[],
+    services: [] as string[],
     onlyWorking: false,
-    hasActiveFoam: false,
     isPromoted: false
   });
 
@@ -1122,16 +1122,21 @@ function App() {
       const typeMatch = selectedType === 'all' || wash.type === selectedType;
       const likesMatch = wash.likes >= activeFilters.minLikes;
       const workingMatch = !activeFilters.onlyWorking || wash.isMachineWorking;
-      const foamMatch = !activeFilters.hasActiveFoam || wash.hasActiveFoam;
       const promotedMatch = !activeFilters.isPromoted || wash.isPromoted;
       
       const paymentMatch = activeFilters.payment.length === 0 || 
-        activeFilters.payment.some(p => wash.payment?.includes(p));
+        activeFilters.payment.every(p => wash.payment?.includes(p));
         
       const equipmentMatch = activeFilters.equipment.length === 0 || 
-        activeFilters.equipment.some(e => wash.equipment?.includes(e));
+        activeFilters.equipment.every(e => wash.equipment?.includes(e));
 
-      return typeMatch && likesMatch && workingMatch && foamMatch && promotedMatch && paymentMatch && equipmentMatch;
+      const servicesMatch = activeFilters.services.length === 0 || 
+        activeFilters.services.every(s => 
+          wash.services?.includes(s) || 
+          (s.includes('Aktywna piana') && wash.hasActiveFoam)
+        );
+
+      return typeMatch && likesMatch && workingMatch && promotedMatch && paymentMatch && equipmentMatch && servicesMatch;
     });
 
     const calculateDistanceRaw = (lat1: number, lon1: number, lat2: number, lon2: number) => {
@@ -1165,10 +1170,10 @@ function App() {
      if (selectedType !== 'all') count++;
      if (activeFilters.minLikes > 0) count++;
      if (activeFilters.onlyWorking) count++;
-     if (activeFilters.hasActiveFoam) count++;
      if (activeFilters.isPromoted) count++;
      if (activeFilters.payment.length > 0) count++;
      if (activeFilters.equipment.length > 0) count++;
+     if (activeFilters.services.length > 0) count++;
      return count;
    }, [activeFilters, selectedType]);
 
@@ -1177,8 +1182,8 @@ function App() {
       minLikes: 0,
       payment: [],
       equipment: [],
+      services: [],
       onlyWorking: false,
-      hasActiveFoam: false,
       isPromoted: false
     });
     setSelectedType('all');
@@ -1342,17 +1347,63 @@ function App() {
             </div>
 
             <div className="space-y-10">
+              {/* Sekcja: Typ Punktu */}
+              <section className="space-y-5">
+                <div className="flex items-center gap-2">
+                  <Car className="w-3.5 h-3.5 text-gold/50" />
+                  <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Kategoria punktu</h4>
+                </div>
+                <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+                  <FilterChip active={selectedType === 'all'} onClick={() => setSelectedType('all')} label="Wszystkie" />
+                  <FilterChip active={selectedType === 'bezdotykowa'} onClick={() => setSelectedType('bezdotykowa')} label="Bezdotykowa" />
+                  <FilterChip active={selectedType === 'reczna'} onClick={() => setSelectedType('reczna')} label="Ręczna" />
+                  <FilterChip active={selectedType === 'autodetailing'} onClick={() => setSelectedType('autodetailing')} label="Autodetailing" />
+                </div>
+              </section>
+
+              {/* Sekcja: Usługi specyficzne dla typu */}
+              {selectedType !== 'all' && (
+                <section className="space-y-5 animate-in fade-in slide-in-from-top-4 duration-500">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-3.5 h-3.5 text-gold/50" />
+                    <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">
+                      Usługi: {selectedType === 'bezdotykowa' ? 'Bezdotykowe' : selectedType === 'reczna' ? 'Ręczne' : 'Detailing'}
+                    </h4>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {WASH_SPECS[selectedType].map(s => (
+                      <button
+                        key={s}
+                        onClick={() => setActiveFilters(f => ({
+                          ...f,
+                          services: f.services.includes(s) ? f.services.filter(x => x !== s) : [...f.services, s]
+                        }))}
+                        className={cn(
+                          "px-4 py-3 rounded-2xl border-2 transition-all text-[9px] font-black uppercase tracking-tight flex items-center gap-3 text-left",
+                          activeFilters.services.includes(s) 
+                            ? "bg-gold text-black border-gold shadow-lg" 
+                            : "bg-zinc-900/50 border-white/5 text-gray-400 hover:border-white/10"
+                        )}
+                      >
+                        <div className={cn("w-1.5 h-1.5 rounded-full flex-shrink-0", activeFilters.services.includes(s) ? "bg-black" : "bg-zinc-700")} />
+                        <span className="leading-tight">{s}</span>
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              )}
+
               {/* Sekcja: Status Myjni */}
               <section className="space-y-5">
                 <div className="flex items-center gap-2">
                   <AlertCircle className="w-3.5 h-3.5 text-gold/50" />
                   <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Status techniczny</h4>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3">
                   <button 
                     onClick={() => setActiveFilters(f => ({ ...f, onlyWorking: !f.onlyWorking }))}
                     className={cn(
-                      "p-4 rounded-[2rem] border-2 transition-all flex flex-col items-center gap-2 relative overflow-hidden group",
+                      "p-4 rounded-[2rem] border-2 transition-all flex items-center gap-4 relative overflow-hidden group",
                       activeFilters.onlyWorking 
                         ? "bg-emerald-500/10 border-emerald-500 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.1)]" 
                         : "bg-zinc-900/50 border-white/5 text-gray-500 hover:border-white/10"
@@ -1361,21 +1412,7 @@ function App() {
                     <div className={cn("p-2 rounded-xl transition-colors", activeFilters.onlyWorking ? "bg-emerald-500 text-black" : "bg-zinc-800")}>
                       <CheckCircle2 className="w-4 h-4" />
                     </div>
-                    <span className="text-[9px] font-black uppercase tracking-widest">Tylko sprawne</span>
-                  </button>
-                  <button 
-                    onClick={() => setActiveFilters(f => ({ ...f, hasActiveFoam: !f.hasActiveFoam }))}
-                    className={cn(
-                      "p-4 rounded-[2rem] border-2 transition-all flex flex-col items-center gap-2 group",
-                      activeFilters.hasActiveFoam 
-                        ? "bg-blue-500/10 border-blue-500 text-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.1)]" 
-                        : "bg-zinc-900/50 border-white/5 text-gray-500 hover:border-white/10"
-                    )}
-                  >
-                    <div className={cn("p-2 rounded-xl transition-colors", activeFilters.hasActiveFoam ? "bg-blue-500 text-black" : "bg-zinc-800")}>
-                      <Sparkles className="w-4 h-4" />
-                    </div>
-                    <span className="text-[9px] font-black uppercase tracking-widest">Aktywna Piana</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest">Pokaż tylko sprawne stanowiska</span>
                   </button>
                 </div>
               </section>
@@ -1412,7 +1449,7 @@ function App() {
               <section className="space-y-5">
                 <div className="flex items-center gap-2">
                   <Settings className="w-3.5 h-3.5 text-gold/50" />
-                  <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Wyposażenie i usługi</h4>
+                  <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Wyposażenie dodatkowe</h4>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   {GLOBAL_SPECS.equipment.map(e => (
