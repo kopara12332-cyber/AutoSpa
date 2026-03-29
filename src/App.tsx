@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Map as MapIcon, List, Search, Filter, Car, Star, Navigation, AlertCircle, TrendingDown, Store, LogIn, Mail, Lock, LogOut, Plus, CheckCircle2, MapPin, Info, ShieldCheck, XCircle, Edit3, Save, CreditCard, Clock, FileText, Settings, Phone, Eye, EyeOff, Camera, Image as ImageIcon, Trash2, Hand, Sparkles, LocateFixed, Loader2 } from 'lucide-react';
+import { Map as MapIcon, List, Search, Filter, Car, Star, Navigation, AlertCircle, TrendingDown, Store, LogIn, Mail, Lock, LogOut, Plus, CheckCircle2, MapPin, Info, ShieldCheck, XCircle, Edit3, Save, CreditCard, Clock, FileText, Settings, Phone, Eye, EyeOff, Camera, Image as ImageIcon, Trash2, Hand, Sparkles, LocateFixed, Loader2, ThumbsUp } from 'lucide-react';
 import { mockCarWashes } from './data';
 import type { CarWash, CarWashType } from './data';
 import { clsx, type ClassValue } from 'clsx';
@@ -197,7 +197,7 @@ function AddWashForm({ onCancel, onSuccess }: { onCancel: () => void, onSuccess:
       ...formData,
       hours: hoursText,
       id: Math.random().toString(36).substr(2, 9),
-      rating: 5.0,
+      likes: 0,
       isQueue: false,
       queueStatus: 'brak',
       isMachineWorking: true,
@@ -973,6 +973,8 @@ function App() {
   const [user, setUser] = useState<User | null>(null);
   const [isAddingWash, setIsAddingWash] = useState(false);
   const [carWashes, setCarWashes] = useState<CarWash[]>(mockCarWashes);
+  const [likedWashes, setLikedWashes] = useState<string[]>([]);
+  const [animatingLike, setAnimatingLike] = useState<string | null>(null);
   const [pendingWashes, setPendingWashes] = useState<any[]>([]);
   const [logoClicks, setLogoClicks] = useState(0);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
@@ -981,13 +983,30 @@ function App() {
   const [showNearestSelector, setShowNearestSelector] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState({
-    minRating: 0,
+    minLikes: 0,
     payment: [] as string[],
     equipment: [] as string[],
     onlyWorking: false,
     hasActiveFoam: false,
     isPromoted: false
   });
+
+  const handleLike = (washId: string) => {
+    if (likedWashes.includes(washId)) return;
+    
+    setLikedWashes(prev => [...prev, washId]);
+    setAnimatingLike(washId);
+    
+    setCarWashes(prev => prev.map(w => 
+      w.id === washId ? { ...w, likes: w.likes + 1 } : w
+    ));
+    
+    if (selectedWash?.id === washId) {
+      setSelectedWash(prev => prev ? { ...prev, likes: prev.likes + 1 } : null);
+    }
+
+    setTimeout(() => setAnimatingLike(null), 600);
+  };
 
   const findNearestWash = (type: CarWashType) => {
     setIsLocating(true);
@@ -1088,7 +1107,7 @@ function App() {
   const filteredWashes = useMemo(() => {
     return carWashes.filter(wash => {
       const typeMatch = selectedType === 'all' || wash.type === selectedType;
-      const ratingMatch = wash.rating >= activeFilters.minRating;
+      const likesMatch = wash.likes >= activeFilters.minLikes;
       const workingMatch = !activeFilters.onlyWorking || wash.isMachineWorking;
       const foamMatch = !activeFilters.hasActiveFoam || wash.hasActiveFoam;
       const promotedMatch = !activeFilters.isPromoted || wash.isPromoted;
@@ -1099,14 +1118,14 @@ function App() {
       const equipmentMatch = activeFilters.equipment.length === 0 || 
         activeFilters.equipment.some(e => wash.equipment?.includes(e));
 
-      return typeMatch && ratingMatch && workingMatch && foamMatch && promotedMatch && paymentMatch && equipmentMatch;
+      return typeMatch && likesMatch && workingMatch && foamMatch && promotedMatch && paymentMatch && equipmentMatch;
     });
   }, [carWashes, selectedType, activeFilters]);
 
   const activeFilterCount = useMemo(() => {
      let count = 0;
      if (selectedType !== 'all') count++;
-     if (activeFilters.minRating > 0) count++;
+     if (activeFilters.minLikes > 0) count++;
      if (activeFilters.onlyWorking) count++;
      if (activeFilters.hasActiveFoam) count++;
      if (activeFilters.isPromoted) count++;
@@ -1117,7 +1136,7 @@ function App() {
 
   const resetFilters = () => {
     setActiveFilters({
-      minRating: 0,
+      minLikes: 0,
       payment: [],
       equipment: [],
       onlyWorking: false,
@@ -1322,20 +1341,20 @@ function App() {
                 </button>
               </div>
 
-              {/* Sekcja: Ocena */}
+              {/* Sekcja: Polubienia */}
               <div className="space-y-4">
-                <h4 className="text-[10px] font-black text-gold uppercase tracking-widest opacity-70">Minimalna Ocena</h4>
+                <h4 className="text-[10px] font-black text-gold uppercase tracking-widest opacity-70">Minimalna liczba polubień</h4>
                 <div className="flex gap-2">
-                  {[0, 3, 4, 4.5].map(rating => (
+                  {[0, 50, 100, 200].map(likes => (
                     <button
-                      key={rating}
-                      onClick={() => setActiveFilters(f => ({ ...f, minRating: rating }))}
+                      key={likes}
+                      onClick={() => setActiveFilters(f => ({ ...f, minLikes: likes }))}
                       className={cn(
                         "flex-1 py-3 rounded-xl border-2 transition-all text-[10px] font-black",
-                        activeFilters.minRating === rating ? "bg-gold border-gold text-black" : "bg-zinc-900 border-zinc-800 text-gray-500"
+                        activeFilters.minLikes === likes ? "bg-gold border-gold text-black" : "bg-zinc-900 border-zinc-800 text-gray-500"
                       )}
                     >
-                      {rating === 0 ? 'Dowolna' : `${rating}+`}
+                      {likes === 0 ? 'Dowolna' : `${likes}+`}
                     </button>
                   ))}
                 </div>
@@ -1479,10 +1498,30 @@ function App() {
 
             <div className="p-6 space-y-6">
               <div className="flex justify-between items-center">
-                 <div className="flex items-center gap-1">
-                    <Star className="w-5 h-5 fill-gold text-gold" />
-                    <span className="font-black text-xl text-gold">{selectedWash.rating}</span>
-                    <span className="text-gray-500 text-sm">(124 głosy)</span>
+                 <div className="flex items-center gap-3">
+                    <button 
+                      onClick={() => handleLike(selectedWash.id)}
+                      disabled={likedWashes.includes(selectedWash.id)}
+                      className={cn(
+                        "relative p-3 rounded-2xl border-2 transition-all group",
+                        likedWashes.includes(selectedWash.id) 
+                          ? "bg-gold border-gold text-black" 
+                          : "bg-zinc-900 border-zinc-800 text-gold hover:border-gold"
+                      )}
+                    >
+                      <ThumbsUp className={cn(
+                        "w-6 h-6", 
+                        likedWashes.includes(selectedWash.id) && "fill-black",
+                        animatingLike === selectedWash.id && "animate-thumb-pop"
+                      )} />
+                      {animatingLike === selectedWash.id && (
+                        <ThumbsUp className="absolute inset-0 w-6 h-6 m-auto text-gold fill-gold animate-float-up pointer-events-none" />
+                      )}
+                    </button>
+                    <div>
+                      <span className="font-black text-2xl text-gold block leading-none">{selectedWash.likes}</span>
+                      <span className="text-gray-500 text-[9px] font-black uppercase tracking-widest">Polubień</span>
+                    </div>
                  </div>
                  <span className="px-3 py-1 bg-zinc-900 text-gold border border-gold/50 rounded-full text-xs font-black uppercase italic tracking-widest">
                    {selectedWash.type}
@@ -1815,8 +1854,8 @@ function CarWashCard({ wash, onClick }: { wash: CarWash, onClick: () => void }) 
         <div className="flex justify-between items-start">
           <h3 className="font-black text-white truncate italic uppercase tracking-tighter">{wash.name}</h3>
           <div className="flex items-center gap-1 bg-black px-1.5 py-0.5 rounded-lg border border-gold/20">
-            <Star className="w-3 h-3 fill-gold text-gold" />
-            <span className="text-[10px] font-black text-gold">{wash.rating}</span>
+            <ThumbsUp className="w-3 h-3 fill-gold text-gold" />
+            <span className="text-[10px] font-black text-gold">{wash.likes}</span>
           </div>
         </div>
         <p className="text-[10px] text-gray-500 truncate mb-2 font-medium">{wash.address}</p>
