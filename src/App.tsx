@@ -983,6 +983,7 @@ function App() {
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [showNearestSelector, setShowNearestSelector] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [sortBy, setSortBy] = useState<'default' | 'likes' | 'distance'>('default');
   const [activeFilters, setActiveFilters] = useState({
     minLikes: 0,
     payment: [] as string[],
@@ -1116,8 +1117,8 @@ function App() {
     setPendingWashes(prev => prev.map(w => w.id === updatedWash.id ? updatedWash : w));
   };
 
-  const filteredWashes = useMemo(() => {
-    return carWashes.filter(wash => {
+  const filteredAndSortedWashes = useMemo(() => {
+    const filtered = carWashes.filter(wash => {
       const typeMatch = selectedType === 'all' || wash.type === selectedType;
       const likesMatch = wash.likes >= activeFilters.minLikes;
       const workingMatch = !activeFilters.onlyWorking || wash.isMachineWorking;
@@ -1132,7 +1133,32 @@ function App() {
 
       return typeMatch && likesMatch && workingMatch && foamMatch && promotedMatch && paymentMatch && equipmentMatch;
     });
-  }, [carWashes, selectedType, activeFilters]);
+
+    const calculateDistanceRaw = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+      return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+    };
+
+    return [...filtered].sort((a, b) => {
+      if (sortBy === 'likes') return b.likes - a.likes;
+      
+      if (sortBy === 'distance' && userLocation) {
+        const distA = calculateDistanceRaw(userLocation[0], userLocation[1], a.lat, a.lng);
+        const distB = calculateDistanceRaw(userLocation[0], userLocation[1], b.lat, b.lng);
+        return distA - distB;
+      }
+
+      // Default: Promoted first, then by likes
+      if (a.isPromoted && !b.isPromoted) return -1;
+      if (!a.isPromoted && b.isPromoted) return 1;
+      return b.likes - a.likes;
+    });
+  }, [carWashes, selectedType, activeFilters, sortBy, userLocation]);
 
   const activeFilterCount = useMemo(() => {
      let count = 0;
@@ -1421,7 +1447,7 @@ function App() {
               onClick={() => setShowFilters(false)}
               className="w-full mt-10 py-4 bg-luxury-gold text-black font-black uppercase italic rounded-2xl shadow-xl shadow-gold/20 active:scale-95 transition-all"
             >
-              Pokaż wyniki ({filteredWashes.length})
+              Pokaż wyniki ({filteredAndSortedWashes.length})
             </button>
           </div>
         </div>
@@ -1437,7 +1463,7 @@ function App() {
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
               <MapUpdater center={mapCenter} />
-              {filteredWashes.map((wash) => (
+              {filteredAndSortedWashes.map((wash) => (
                 <Marker 
                   key={wash.id} 
                   position={[wash.lat, wash.lng]}
@@ -1464,7 +1490,40 @@ function App() {
 
         {activeView === 'list' && (
           <div className="p-4 space-y-4 bg-black no-scrollbar overflow-y-auto">
-            {filteredWashes.map((wash, index) => (
+            {/* Sort Bar */}
+            <div className="flex items-center gap-2 pb-2 overflow-x-auto no-scrollbar">
+              <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest whitespace-nowrap mr-1">Sortuj:</span>
+              <button 
+                onClick={() => setSortBy('default')}
+                className={cn(
+                  "px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest transition-all whitespace-nowrap border",
+                  sortBy === 'default' ? "bg-gold text-black border-gold" : "bg-zinc-900 text-gray-400 border-white/5"
+                )}
+              >
+                Domyślne
+              </button>
+              <button 
+                onClick={() => setSortBy('likes')}
+                className={cn(
+                  "px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest transition-all whitespace-nowrap border",
+                  sortBy === 'likes' ? "bg-gold text-black border-gold" : "bg-zinc-900 text-gray-400 border-white/5"
+                )}
+              >
+                Najwięcej polubień
+              </button>
+              <button 
+                onClick={() => setSortBy('distance')}
+                disabled={!userLocation}
+                className={cn(
+                  "px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest transition-all whitespace-nowrap border disabled:opacity-30",
+                  sortBy === 'distance' ? "bg-gold text-black border-gold" : "bg-zinc-900 text-gray-400 border-white/5"
+                )}
+              >
+                Najbliżej mnie
+              </button>
+            </div>
+
+            {filteredAndSortedWashes.map((wash, index) => (
               <div 
                 key={wash.id} 
                 className="animate-fade-in-up" 
@@ -1909,9 +1968,9 @@ function CarWashCard({ wash, onClick, userLocation }: { wash: CarWash, onClick: 
               <span className="text-[10px] font-black text-gold">{wash.likes}</span>
             </div>
             {userLocation && (
-              <div className="flex items-center gap-1 text-gray-500 bg-white/5 px-1.5 py-0.5 rounded-lg border border-white/5">
-                <Navigation className="w-2.5 h-2.5 rotate-45" />
-                <span className="text-[8px] font-black uppercase tracking-widest">
+              <div className="flex items-center gap-1.5 text-gold bg-gold/10 px-2 py-1 rounded-lg border border-gold/20 shadow-sm">
+                <Navigation className="w-3 h-3 rotate-45" />
+                <span className="text-[9px] font-black uppercase tracking-widest">
                   {getDistance(userLocation[0], userLocation[1], wash.lat, wash.lng)}
                 </span>
               </div>
