@@ -1485,22 +1485,21 @@ function App() {
       {/* App Header (Midnight Gold Style) */}
       <header className="bg-gold-gradient text-white p-4 shadow-lg z-20 flex flex-col gap-4 border-b border-white/10">
         <div className="flex justify-between items-center px-2">
-          <div className="flex items-center gap-3 group" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
-             <div className="relative">
-               <div className="bg-luxury-gold p-2.5 rounded-2xl shadow-xl transform group-hover:rotate-12 transition-all duration-500 active:scale-90">
-                 <Car className="w-6 h-6 text-black" />
-               </div>
-               <div className="absolute -top-1 -right-1">
-                 <Sparkles className="w-4 h-4 text-white animate-pulse drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
+          <div className="flex flex-col group" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
+             <div className="flex items-baseline relative">
+               <h1 className="text-3xl font-black tracking-[-0.08em] italic uppercase select-none leading-none flex items-center">
+                 <span className="text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">Auto</span>
+                 <span className="animate-text-shimmer ml-1 drop-shadow-[0_0_20px_rgba(212,175,55,0.4)]">Spa</span>
+               </h1>
+               <div className="absolute -top-2 -right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-700">
+                 <Sparkles className="w-4 h-4 text-gold animate-pulse" />
                </div>
              </div>
-             <div className="flex flex-col relative">
-               <h1 className="text-2xl font-black tracking-[-0.05em] italic uppercase text-white select-none leading-none">
-                 Auto<span className="text-gold drop-shadow-[0_0_10px_rgba(212,175,55,0.3)]">Spa</span>
-               </h1>
-               <div className="flex items-center gap-1 mt-0.5">
-                 <div className="h-[2px] w-full bg-gradient-to-r from-gold/60 to-transparent rounded-full" />
-                 <div className="w-1 h-1 rounded-full bg-gold animate-pulse" />
+             <div className="flex items-center gap-1.5 mt-1">
+               <div className="h-[3px] w-12 bg-gradient-to-r from-gold via-gold to-transparent rounded-full shadow-[0_0_10px_rgba(212,175,55,0.5)]" />
+               <div className="flex gap-0.5">
+                 <div className="w-1 h-1 rounded-full bg-gold/40" />
+                 <div className="w-1 h-1 rounded-full bg-gold/20" />
                </div>
              </div>
           </div>
