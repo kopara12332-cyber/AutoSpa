@@ -979,6 +979,15 @@ function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
   const [showNearestSelector, setShowNearestSelector] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [activeFilters, setActiveFilters] = useState({
+    minRating: 0,
+    payment: [] as string[],
+    equipment: [] as string[],
+    onlyWorking: false,
+    hasActiveFoam: false,
+    isPromoted: false
+  });
 
   const findNearestWash = (type: CarWashType) => {
     setIsLocating(true);
@@ -1077,9 +1086,46 @@ function App() {
   };
 
   const filteredWashes = useMemo(() => {
-    if (selectedType === 'all') return carWashes;
-    return carWashes.filter(w => w.type === selectedType);
-  }, [selectedType, carWashes]);
+    return carWashes.filter(wash => {
+      const typeMatch = selectedType === 'all' || wash.type === selectedType;
+      const ratingMatch = wash.rating >= activeFilters.minRating;
+      const workingMatch = !activeFilters.onlyWorking || wash.isMachineWorking;
+      const foamMatch = !activeFilters.hasActiveFoam || wash.hasActiveFoam;
+      const promotedMatch = !activeFilters.isPromoted || wash.isPromoted;
+      
+      const paymentMatch = activeFilters.payment.length === 0 || 
+        activeFilters.payment.some(p => wash.payment?.includes(p));
+        
+      const equipmentMatch = activeFilters.equipment.length === 0 || 
+        activeFilters.equipment.some(e => wash.equipment?.includes(e));
+
+      return typeMatch && ratingMatch && workingMatch && foamMatch && promotedMatch && paymentMatch && equipmentMatch;
+    });
+  }, [carWashes, selectedType, activeFilters]);
+
+  const activeFilterCount = useMemo(() => {
+     let count = 0;
+     if (selectedType !== 'all') count++;
+     if (activeFilters.minRating > 0) count++;
+     if (activeFilters.onlyWorking) count++;
+     if (activeFilters.hasActiveFoam) count++;
+     if (activeFilters.isPromoted) count++;
+     if (activeFilters.payment.length > 0) count++;
+     if (activeFilters.equipment.length > 0) count++;
+     return count;
+   }, [activeFilters, selectedType]);
+
+  const resetFilters = () => {
+    setActiveFilters({
+      minRating: 0,
+      payment: [],
+      equipment: [],
+      onlyWorking: false,
+      hasActiveFoam: false,
+      isPromoted: false
+    });
+    setSelectedType('all');
+  };
 
   const handleWashClick = (wash: CarWash) => {
     setSelectedWash(wash);
@@ -1118,8 +1164,16 @@ function App() {
             >
               <LocateFixed className="w-5 h-5 group-active:scale-90 transition-transform" />
             </button>
-            <button className="p-2 hover:bg-white/10 rounded-full transition-colors text-gold">
+            <button 
+              onClick={() => setShowFilters(true)}
+              className="p-2 hover:bg-white/10 rounded-full transition-colors text-gold relative"
+            >
               <Filter className="w-5 h-5" />
+              {activeFilterCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-[8px] font-black rounded-full flex items-center justify-center border border-black animate-in zoom-in">
+                  {activeFilterCount}
+                </span>
+              )}
             </button>
           </div>
         </div>
@@ -1187,6 +1241,157 @@ function App() {
                 </button>
               ))}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Panel: Filtrowanie (Slide-up Overlay) */}
+      {showFilters && (
+        <div className="fixed inset-0 z-[3000] flex items-end">
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300" 
+            onClick={() => setShowFilters(false)}
+          />
+          <div className="w-full bg-zinc-950 border-t-2 border-gold/50 rounded-t-[2.5rem] p-6 pb-12 animate-slide-up relative z-10 shadow-[0_-10px_40px_rgba(212,175,55,0.15)] max-h-[85vh] overflow-y-auto no-scrollbar">
+            <div className="absolute top-3 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-white/10 rounded-full" />
+            
+            <div className="flex justify-between items-center mb-6 sticky top-0 bg-zinc-950 z-10 py-2">
+              <div className="flex items-center gap-3">
+                <div className="bg-gold/10 p-2 rounded-xl">
+                  <Filter className="w-5 h-5 text-gold" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-gold uppercase tracking-[0.2em]">Filtry zaawansowane</h3>
+                  <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Dostosuj wyniki wyszukiwania</p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button 
+                  onClick={resetFilters}
+                  className="text-[8px] font-black uppercase text-rose-500 hover:text-rose-400 px-3 py-2 bg-rose-500/10 rounded-xl transition-colors"
+                >
+                  Resetuj
+                </button>
+                <button 
+                  onClick={() => setShowFilters(false)}
+                  className="p-2 bg-zinc-900 rounded-xl text-gray-500 hover:text-white transition-colors"
+                >
+                  <XCircle className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-8">
+              {/* Sekcja: Typ i Status */}
+              <div className="space-y-4">
+                <h4 className="text-[10px] font-black text-gold uppercase tracking-widest opacity-70">Status i Wyróżnienia</h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <button 
+                    onClick={() => setActiveFilters(f => ({ ...f, onlyWorking: !f.onlyWorking }))}
+                    className={cn(
+                      "p-4 rounded-2xl border-2 transition-all flex flex-col gap-2",
+                      activeFilters.onlyWorking ? "bg-emerald-500/10 border-emerald-500 text-emerald-500" : "bg-zinc-900 border-zinc-800 text-gray-500"
+                    )}
+                  >
+                    <AlertCircle className="w-5 h-5" />
+                    <span className="text-[9px] font-black uppercase tracking-widest">Tylko sprawne</span>
+                  </button>
+                  <button 
+                    onClick={() => setActiveFilters(f => ({ ...f, isPromoted: !f.isPromoted }))}
+                    className={cn(
+                      "p-4 rounded-2xl border-2 transition-all flex flex-col gap-2",
+                      activeFilters.isPromoted ? "bg-gold/10 border-gold text-gold" : "bg-zinc-900 border-zinc-800 text-gray-500"
+                    )}
+                  >
+                    <Star className="w-5 h-5" />
+                    <span className="text-[9px] font-black uppercase tracking-widest">Wyróżnione</span>
+                  </button>
+                </div>
+                <button 
+                  onClick={() => setActiveFilters(f => ({ ...f, hasActiveFoam: !f.hasActiveFoam }))}
+                  className={cn(
+                    "w-full p-4 rounded-2xl border-2 transition-all flex items-center justify-between",
+                    activeFilters.hasActiveFoam ? "bg-blue-500/10 border-blue-500 text-blue-500" : "bg-zinc-900 border-zinc-800 text-gray-500"
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    <Sparkles className="w-5 h-5" />
+                    <span className="text-[9px] font-black uppercase tracking-widest">Aktywna Piana</span>
+                  </div>
+                  {activeFilters.hasActiveFoam && <CheckCircle2 className="w-4 h-4" />}
+                </button>
+              </div>
+
+              {/* Sekcja: Ocena */}
+              <div className="space-y-4">
+                <h4 className="text-[10px] font-black text-gold uppercase tracking-widest opacity-70">Minimalna Ocena</h4>
+                <div className="flex gap-2">
+                  {[0, 3, 4, 4.5].map(rating => (
+                    <button
+                      key={rating}
+                      onClick={() => setActiveFilters(f => ({ ...f, minRating: rating }))}
+                      className={cn(
+                        "flex-1 py-3 rounded-xl border-2 transition-all text-[10px] font-black",
+                        activeFilters.minRating === rating ? "bg-gold border-gold text-black" : "bg-zinc-900 border-zinc-800 text-gray-500"
+                      )}
+                    >
+                      {rating === 0 ? 'Dowolna' : `${rating}+`}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Sekcja: Płatność */}
+              <div className="space-y-4">
+                <h4 className="text-[10px] font-black text-gold uppercase tracking-widest opacity-70">Metody Płatności</h4>
+                <div className="flex flex-wrap gap-2">
+                  {GLOBAL_SPECS.payment.map(p => (
+                    <button
+                      key={p}
+                      onClick={() => setActiveFilters(f => ({
+                        ...f,
+                        payment: f.payment.includes(p) ? f.payment.filter(x => x !== p) : [...f.payment, p]
+                      }))}
+                      className={cn(
+                        "px-4 py-2 rounded-xl border-2 transition-all text-[8px] font-black uppercase",
+                        activeFilters.payment.includes(p) ? "bg-gold border-gold text-black" : "bg-zinc-900 border-zinc-800 text-gray-500"
+                      )}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Sekcja: Wyposażenie */}
+              <div className="space-y-4">
+                <h4 className="text-[10px] font-black text-gold uppercase tracking-widest opacity-70">Wyposażenie dodatkowe</h4>
+                <div className="flex flex-wrap gap-2">
+                  {GLOBAL_SPECS.equipment.map(e => (
+                    <button
+                      key={e}
+                      onClick={() => setActiveFilters(f => ({
+                        ...f,
+                        equipment: f.equipment.includes(e) ? f.equipment.filter(x => x !== e) : [...f.equipment, e]
+                      }))}
+                      className={cn(
+                        "px-4 py-2 rounded-xl border-2 transition-all text-[8px] font-black uppercase",
+                        activeFilters.equipment.includes(e) ? "bg-gold border-gold text-black" : "bg-zinc-900 border-zinc-800 text-gray-500"
+                      )}
+                    >
+                      {e}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <button 
+              onClick={() => setShowFilters(false)}
+              className="w-full mt-10 py-4 bg-luxury-gold text-black font-black uppercase italic rounded-2xl shadow-xl shadow-gold/20 active:scale-95 transition-all"
+            >
+              Pokaż wyniki ({filteredWashes.length})
+            </button>
           </div>
         </div>
       )}
