@@ -88,6 +88,8 @@
   transform: none; /* No rotation for autodetailing */
   color: #000;
 }
+
+@keyframes pulse-bezdotykowa {
   0% { transform: rotate(-45deg) scale(1); box-shadow: 0 0 20px rgba(212, 175, 55, 0.6); }
   50% { transform: rotate(-45deg) scale(1.15); box-shadow: 0 0 35px rgba(212, 175, 55, 0.8), 0 0 15px #fff; }
   100% { transform: rotate(-45deg) scale(1); box-shadow: 0 0 20px rgba(212, 175, 55, 0.6); }
