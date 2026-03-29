@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Map as MapIcon, List, Filter, Car, Star, Navigation, AlertCircle, TrendingDown, Store, LogIn, Mail, Lock, LogOut, Plus, CheckCircle2, MapPin, Info, ShieldCheck, XCircle, Edit3, Save, CreditCard, Clock, FileText, Settings, Phone, Eye, EyeOff, Camera, Image as ImageIcon, Trash2, Hand, Sparkles, LocateFixed, Loader2, ThumbsUp, CloudSun, Sun, CloudRain, Wind, Droplets, Share2, Copy, ExternalLink } from 'lucide-react';
-import { mockCarWashes } from './data';
 import type { CarWash, CarWashType } from './data';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -1365,7 +1364,7 @@ function ShareModal({ wash, onBack }: { wash: CarWash, onBack: () => void }) {
   };
 
   const handleNativeShare = async () => {
-    if (navigator.share) {
+    if (typeof navigator.share !== 'undefined') {
       try {
         await navigator.share({
           title: `AutoSpa - ${wash.name}`,
@@ -1408,7 +1407,7 @@ function ShareModal({ wash, onBack }: { wash: CarWash, onBack: () => void }) {
           </button>
         </div>
         
-        {navigator.share && (
+        {typeof navigator.share !== 'undefined' && (
           <button 
             onClick={handleNativeShare}
             className="w-full py-4 bg-luxury-gold text-black rounded-2xl font-black uppercase italic tracking-widest shadow-xl flex items-center justify-center gap-2"
@@ -1637,7 +1636,6 @@ function App() {
   const [promotingWash, setPromotingWash] = useState<CarWash | null>(null);
   const [carWashes, setCarWashes] = useState<CarWash[]>([]);
   const [pendingWashes, setPendingWashes] = useState<any[]>([]);
-  const [loadingWashes, setLoadingWashes] = useState(true);
    const [showOnboarding, setShowOnboarding] = useState(() => !localStorage.getItem('autospa_onboarding_complete'));
    const [likedWashes, setLikedWashes] = useState<string[]>([]);
    const [animatingLike, setAnimatingLike] = useState<string | null>(null);
@@ -1686,8 +1684,6 @@ function App() {
       }
     } catch (err) {
       console.error('Error fetching car washes:', err);
-    } finally {
-      setLoadingWashes(false);
     }
   };
 
