@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Map as MapIcon, List, Filter, Car, Star, Navigation, AlertCircle, TrendingDown, Store, LogIn, Mail, Lock, LogOut, Plus, CheckCircle2, MapPin, Info, ShieldCheck, XCircle, Edit3, Save, CreditCard, Clock, FileText, Settings, Phone, Eye, EyeOff, Camera, Image as ImageIcon, Trash2, Hand, Sparkles, LocateFixed, Loader2, ThumbsUp, CloudSun, Sun, CloudRain, Wind, Droplets } from 'lucide-react';
+import { Map as MapIcon, List, Filter, Car, Star, Navigation, AlertCircle, TrendingDown, Store, LogIn, Mail, Lock, LogOut, Plus, CheckCircle2, MapPin, Info, ShieldCheck, XCircle, Edit3, Save, CreditCard, Clock, FileText, Settings, Phone, Eye, EyeOff, Camera, Image as ImageIcon, Trash2, Hand, Sparkles, LocateFixed, Loader2, ThumbsUp, CloudSun, Sun, CloudRain, Wind, Droplets, Share2, Copy, ExternalLink } from 'lucide-react';
 import { mockCarWashes } from './data';
 import type { CarWash, CarWashType } from './data';
 import { clsx, type ClassValue } from 'clsx';
@@ -83,18 +83,20 @@ const WASH_SPECS = {
     'Mycie podwozia (automat)', 'Oprysk felg / Chemia do felg', 'Szczotka z pianą (miękka)', 
     'Usuwanie owadów (specjalny program)', 'Mycie motocykli (uchwyt)', 'Oprysk wstępny (zmiękczanie)',
     'Turbopiana (bardzo gęsta)', 'Program "Stop" (pauza)', 'Stanowisko SUV/Bus/Kamper',
-    'Uchwyty na dywaniki (klamry)', 'Oświetlenie nocne LED', 'Zadaszenie stanowisk'
+    'Uchwyty na dywaniki (klamry)', 'Oświetlenie nocne LED', 'Zadaszenie stanowisk',
+    'Pranie tapicerki (sucha piana)', 'Suszarka samochodowa (ręczna)', 'Dezynfekcja wnętrza (ozonowanie)',
+    'Program "Black Wheel" (nabłyszczanie opon)', 'Płyn do spryskiwaczy z dystrybutora'
   ],
   reczna: [
     'Mycie ręczne (na dwa wiadra)', 'Mycie detailingowe (pędzelkowanie)', 'Mycie silnika (góra/dół)',
     'Mycie podwozia (podnośnik)', 'Osuszanie ręczne (mikrofibra)', 'Osuszanie sprężonym powietrzem',
     'Glinkowanie karoserii', 'Dekontaminacja (usuwanie smoły/asfaltu)', 'Deironizacja felg (krwawa felga)',
     'Woskowanie ręczne (twardy wosk)', 'Aplikacja wosku na mokro', 'Mycie szyb (odtłuszczanie)',
-    'Odkurzanie wnętrza (bardzo dokładne)', 'Czyszczenie kokpitu i plastików', 'Pranie tapicerki (ekstrakcyjne)',
+    'Odkurzanie wnętrza (bardzo dokładne)', 'Czyszczenie kokpitu i plastików', 'Pranie tapicerki (ekstrakcyjne/na mokro)',
     'Czyszczenie i impregnacja skór', 'Ozonowanie wnętrza (dezynfekcja)', 'Odgrzybianie klimatyzacji',
     'Niewidzialna wycieraczka', 'Dressing opon (efekt mokrej opony)', 'Dressing plastików zewnętrznych',
     'Czyszczenie wnęk (drzwi/klapa/wlew)', 'Usuwanie sierści zwierząt', 'Przygotowanie do sprzedaży',
-    'Usuwanie naklejek i reklam', 'Mycie motocykli i quadów'
+    'Usuwanie naklejek i reklam', 'Mycie motocykli i quadów', 'Zabezpieczenie dachu (kabriolet)'
   ],
   autodetailing: [
     'Korekta lakieru (One Step)', 'Korekta lakieru (Wieloetapowa)', 'Powłoka ceramiczna (lakier/felgi)',
@@ -103,24 +105,25 @@ const WASH_SPECS = {
     'Renowacja reflektorów (polerowanie)', 'Renowacja skór (naprawa/malowanie)', 'Pełny detailing wnętrza',
     'Zabezpieczenie dachów kabrioletów', 'Polerowanie szyb (usuwanie rys)', 'Zabezpieczenie antykorozyjne',
     'Usuwanie wgnieceń (PDR)', 'Zaprawki lakiernicze', 'Czyszczenie silnika (detailing)',
-    'Powłoka hydrofobowa na felgi', 'Zabezpieczenie felg (wosk/ceramika)'
+    'Powłoka hydrofobowa na felgi', 'Zabezpieczenie felg (wosk/ceramika)', 'Czyszczenie suchym lodem'
   ]
 };
 
 const GLOBAL_SPECS = {
   payment: [
     'Gotówka (monety)', 'Gotówka (banknoty)', 'Karta płatnicza (terminal)',
-    'Płatność zbliżeniowa (telefon)', 'Blik', 'Aplikacja mobilna (Beem/mPay)',
+    'Płatność zbliżeniowa (telefon)', 'Blik', 'Aplikacja mobilna (Beem/mPay/BKF)',
     'Żeton myjni', 'Karta przedpłacona / lojalnościowa', 'Faktura VAT (automat)',
-    'Abonament dla firm', 'Przelew (B2B)'
+    'Abonament dla firm', 'Przelew (B2B)', 'Paragon z NIP (QR kod)'
   ],
   equipment: [
     'Odkurzacz (mocny)', 'Kompresor do kół (powietrze)', 'Kompresor do wody (szczeliny)',
     'Rozmieniarka pieniędzy', 'Automat do kawy / napojów', 'Automat z przekąskami',
-    'Sklep z kosmetykami', 'Myjka do dywaników (automat)', 'Stół do trzepania dywaników',
+    'Sklep z kosmetykami', 'Myjka do dywaników (automat/Mat Cleaner)', 'Stół do trzepania dywaników',
     'Toaleta dla klientów', 'Wi-Fi dla klientów', 'Poczekalnia z klimatyzacją',
     'Wiadro z ciepłą wodą', 'Stanowisko do suszenia (dach)', 'Monitoring 24h',
-    'Paczkomat na terenie', 'Ładowarka EV (elektryki)'
+    'Paczkomat na terenie', 'Ładowarka EV (elektryki)', 'Ogrzewana posadzka (zima)',
+    'Automat z czyścikami / zapachami', 'Uchwyt na rower'
   ],
   hours: [
     '24/7 (Całodobowo)', 'Pon-Pt: 8:00-20:00', 'Pon-Sob: 9:00-18:00',
@@ -150,27 +153,58 @@ function AddWashForm({ onCancel, onSuccess, initialData, userEmail }: { onCancel
     images: [] as string[]
   });
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [uploading, setUploading] = useState(false);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (files) {
-      Array.from(files).forEach(file => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setFormData((prev: any) => ({
-            ...prev,
-            images: [...prev.images, reader.result as string]
-          }));
-        };
-        reader.readAsDataURL(file);
-      });
+    if (!files || files.length === 0) return;
+
+    setUploading(true);
+    const newImages: string[] = [...formData.images];
+
+    for (const file of Array.from(files)) {
+      try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
+        const filePath = `washes/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('wash-images')
+          .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('wash-images')
+          .getPublicUrl(filePath);
+
+        newImages.push(publicUrl);
+      } catch (err) {
+        console.error('Error uploading image:', err);
+        alert('Błąd podczas przesyłania zdjęcia.');
+      }
     }
+
+    setFormData((prev: any) => ({ ...prev, images: newImages }));
+    setUploading(false);
   };
 
-  const removeImage = (index: number) => {
+  const removeImage = async (index: number) => {
+    const imageUrl = formData.images[index];
     setFormData((prev: any) => ({
       ...prev,
       images: prev.images.filter((_: any, i: number) => i !== index)
     }));
+
+    // Opcjonalnie: Usuwanie z Supabase Storage (wymaga wyłuskania ścieżki z URL)
+    try {
+      const path = imageUrl.split('/storage/v1/object/public/wash-images/')[1];
+      if (path) {
+        await supabase.storage.from('wash-images').remove([path]);
+      }
+    } catch (err) {
+      console.error('Error removing from storage:', err);
+    }
   };
   const [loading, setLoading] = useState(false);
 
@@ -501,10 +535,13 @@ function AddWashForm({ onCancel, onSuccess, initialData, userEmail }: { onCancel
                 </div>
               ))}
               {formData.images.length < 8 && (
-                <label className="aspect-square rounded-xl border-2 border-dashed border-zinc-800 flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-gold transition-colors text-gray-500 hover:text-gold bg-black/20">
-                  <Camera className="w-5 h-5" />
-                  <span className="text-[8px] font-black uppercase tracking-widest">Dodaj</span>
-                  <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} />
+                <label className={cn(
+                  "aspect-square rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-1 cursor-pointer transition-all bg-black/20",
+                  uploading ? "border-gold animate-pulse opacity-50 cursor-wait" : "border-zinc-800 hover:border-gold text-gray-500 hover:text-gold"
+                )}>
+                  {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Camera className="w-5 h-5" />}
+                  <span className="text-[8px] font-black uppercase tracking-widest">{uploading ? 'Wysyłam...' : 'Dodaj'}</span>
+                  <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} disabled={uploading} />
                 </label>
               )}
             </div>
@@ -1313,6 +1350,121 @@ function OwnerAnalytics({ wash, onBack }: { wash: CarWash, onBack: () => void })
   );
 }
 
+function ShareModal({ wash, onBack }: { wash: CarWash, onBack: () => void }) {
+  const [copied, setCopied] = useState(false);
+  const shareUrl = `${window.location.origin}?wash=${wash.id}`;
+  
+  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${wash.lat},${wash.lng}`;
+  const wazeUrl = `https://waze.com/ul?ll=${wash.lat},${wash.lng}&navigate=yes`;
+  const appleMapsUrl = `maps://maps.apple.com/?q=${wash.name}&ll=${wash.lat},${wash.lng}`;
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(shareUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleNativeShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `AutoSpa - ${wash.name}`,
+          text: `Sprawdź tę myjnię w aplikacji AutoSpa: ${wash.name} (${wash.address})`,
+          url: shareUrl,
+        });
+      } catch (err) {
+        console.log('Error sharing:', err);
+      }
+    }
+  };
+
+  return (
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="flex items-center gap-3 border-b border-gold/20 pb-4">
+        <button onClick={onBack} className="text-gray-500 hover:text-white">
+          <Navigation className="w-6 h-6 rotate-180" />
+        </button>
+        <div>
+          <h2 className="text-xl font-black text-gold uppercase italic tracking-tighter">Udostępnij Punkt</h2>
+          <p className="text-[10px] text-gray-500 uppercase font-black">{wash.name}</p>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] ml-2">Link do aplikacji</h3>
+        <div className="bg-zinc-900/50 p-4 rounded-3xl border border-white/5 flex items-center justify-between gap-3">
+          <div className="flex-1 truncate">
+            <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest mb-1">Unikalny link</p>
+            <p className="text-xs text-white font-medium truncate">{shareUrl}</p>
+          </div>
+          <button 
+            onClick={handleCopyLink}
+            className={cn(
+              "p-3 rounded-2xl border-2 transition-all active:scale-90",
+              copied ? "bg-emerald-500 border-emerald-500 text-black" : "bg-black border-zinc-800 text-gold hover:border-gold"
+            )}
+          >
+            {copied ? <CheckCircle2 className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
+          </button>
+        </div>
+        
+        {navigator.share && (
+          <button 
+            onClick={handleNativeShare}
+            className="w-full py-4 bg-luxury-gold text-black rounded-2xl font-black uppercase italic tracking-widest shadow-xl flex items-center justify-center gap-2"
+          >
+            <Share2 className="w-5 h-5" /> Udostępnij systemowo
+          </button>
+        )}
+      </div>
+
+      <div className="space-y-3">
+        <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] ml-2">Nawiguj bezpośrednio</h3>
+        <div className="grid grid-cols-1 gap-2">
+          <a href={googleMapsUrl} target="_blank" rel="noreferrer" className="bg-zinc-900/50 p-4 rounded-2xl border border-white/5 flex items-center justify-between group hover:border-gold/30 transition-all">
+            <div className="flex items-center gap-4">
+              <div className="p-2 bg-black rounded-xl">
+                <MapIcon className="w-6 h-6 text-emerald-500" />
+              </div>
+              <div>
+                <p className="text-xs font-black text-white uppercase italic">Google Maps</p>
+                <p className="text-[8px] text-gray-500 font-bold uppercase tracking-widest">Otwórz w mapach Google</p>
+              </div>
+            </div>
+            <ExternalLink className="w-4 h-4 text-gray-600 group-hover:text-gold" />
+          </a>
+          
+          <a href={wazeUrl} target="_blank" rel="noreferrer" className="bg-zinc-900/50 p-4 rounded-2xl border border-white/5 flex items-center justify-between group hover:border-gold/30 transition-all">
+            <div className="flex items-center gap-4">
+              <div className="p-2 bg-black rounded-xl">
+                <Navigation className="w-6 h-6 text-blue-400 rotate-45" />
+              </div>
+              <div>
+                <p className="text-xs font-black text-white uppercase italic">Waze</p>
+                <p className="text-[8px] text-gray-500 font-bold uppercase tracking-widest">Najszybsza trasa z Waze</p>
+              </div>
+            </div>
+            <ExternalLink className="w-4 h-4 text-gray-600 group-hover:text-gold" />
+          </a>
+
+          <a href={appleMapsUrl} className="bg-zinc-900/50 p-4 rounded-2xl border border-white/5 flex items-center justify-between group hover:border-gold/30 transition-all">
+            <div className="flex items-center gap-4">
+              <div className="p-2 bg-black rounded-xl">
+                <MapPin className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <p className="text-xs font-black text-white uppercase italic">Apple Maps</p>
+                <p className="text-[8px] text-gray-500 font-bold uppercase tracking-widest">Dla użytkowników iPhone</p>
+              </div>
+            </div>
+            <ExternalLink className="w-4 h-4 text-gray-600 group-hover:text-gold" />
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function WeatherModal({ onBack, userLocation }: { onBack: () => void, userLocation: [number, number] | null }) {
   const [weatherData, setWeatherData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -1481,42 +1633,124 @@ function App() {
   const [editingWash, setEditingWash] = useState<any | null>(null);
   const [viewingAnalytics, setViewingAnalytics] = useState<CarWash | null>(null);
   const [viewingWeather, setViewingWeather] = useState(false);
+  const [viewingShare, setViewingShare] = useState<CarWash | null>(null);
   const [promotingWash, setPromotingWash] = useState<CarWash | null>(null);
-  const [carWashes, setCarWashes] = useState<CarWash[]>(mockCarWashes);
-  const [showOnboarding, setShowOnboarding] = useState(() => !localStorage.getItem('autospa_onboarding_complete'));
-  const [likedWashes, setLikedWashes] = useState<string[]>([]);
-  const [animatingLike, setAnimatingLike] = useState<string | null>(null);
+  const [carWashes, setCarWashes] = useState<CarWash[]>([]);
   const [pendingWashes, setPendingWashes] = useState<any[]>([]);
-  const [logoClicks, setLogoClicks] = useState(0);
-  const [showAdminLogin, setShowAdminLogin] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isLocating, setIsLocating] = useState(false);
-  const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
-  const [showNearestSelector, setShowNearestSelector] = useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [showFilters, setShowFilters] = useState(false);
-  const [sortBy, setSortBy] = useState<'default' | 'likes' | 'distance'>('default');
-  const [activeFilters, setActiveFilters] = useState({
-    minLikes: 0,
-    payment: [] as string[],
-    equipment: [] as string[],
-    services: [] as string[],
-    onlyWorking: false,
-    isPromoted: false
-  });
+  const [loadingWashes, setLoadingWashes] = useState(true);
+   const [showOnboarding, setShowOnboarding] = useState(() => !localStorage.getItem('autospa_onboarding_complete'));
+   const [likedWashes, setLikedWashes] = useState<string[]>([]);
+   const [animatingLike, setAnimatingLike] = useState<string | null>(null);
+   const [logoClicks, setLogoClicks] = useState(0);
+   const [showAdminLogin, setShowAdminLogin] = useState(false);
+   const [isAdmin, setIsAdmin] = useState(false);
+   const [isLocating, setIsLocating] = useState(false);
+   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+   const [showNearestSelector, setShowNearestSelector] = useState(false);
+   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+   const [showFilters, setShowFilters] = useState(false);
+   const [sortBy, setSortBy] = useState<'default' | 'likes' | 'distance'>('default');
+   const [activeFilters, setActiveFilters] = useState({
+     minLikes: 0,
+     payment: [] as string[],
+     equipment: [] as string[],
+     services: [] as string[],
+     onlyWorking: false,
+     isPromoted: false
+   });
 
-  const handleLike = (washId: string) => {
+   const fetchCarWashes = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('car_washes')
+        .select('*')
+        .order('is_promoted', { ascending: false })
+        .order('likes', { ascending: false });
+
+      if (error) throw error;
+      if (data) {
+        const mappedData = data.map((w: any) => ({
+          ...w,
+          isPromoted: w.is_promoted,
+          promotionText: w.promotion_text,
+          queueStatus: w.queue_status,
+          userReports: w.user_reports,
+          ownerEmail: w.owner_email,
+          openingHours: w.opening_hours,
+          isPhoneVisible: w.is_phone_visible,
+          isMachineWorking: w.is_machine_working,
+          hasActiveFoam: w.has_active_foam,
+          isQueue: w.is_queue
+        }));
+        setCarWashes(mappedData);
+      }
+    } catch (err) {
+      console.error('Error fetching car washes:', err);
+    } finally {
+      setLoadingWashes(false);
+    }
+  };
+
+  const fetchPendingSubmissions = async () => {
+     try {
+       const { data, error } = await supabase
+         .from('pending_submissions')
+         .select('*')
+         .eq('status', 'pending')
+         .order('created_at', { ascending: false });
+ 
+       if (error) throw error;
+       if (data) {
+         const mappedData = data.map((w: any) => ({
+           ...w,
+           isPromoted: w.is_promoted,
+           promotionText: w.promotion_text,
+           queueStatus: w.queue_status,
+           userReports: w.user_reports,
+           ownerEmail: w.owner_email,
+           openingHours: w.opening_hours,
+           isPhoneVisible: w.is_phone_visible,
+           isMachineWorking: w.is_machine_working,
+           hasActiveFoam: w.has_active_foam,
+           isQueue: w.is_queue,
+           isEdit: w.is_edit,
+           isPromotionRequest: w.is_promotion_request,
+           durationDays: w.duration_days
+         }));
+         setPendingWashes(mappedData);
+       }
+     } catch (err) {
+       console.error('Error fetching submissions:', err);
+     }
+   };
+
+   const handleLike = async (washId: string) => {
     if (likedWashes.includes(washId)) return;
     
     setLikedWashes(prev => [...prev, washId]);
     setAnimatingLike(washId);
     
-    setCarWashes(prev => prev.map(w => 
-      w.id === washId ? { ...w, likes: w.likes + 1 } : w
-    ));
-    
-    if (selectedWash?.id === washId) {
-      setSelectedWash(prev => prev ? { ...prev, likes: prev.likes + 1 } : null);
+    try {
+      const wash = carWashes.find(w => w.id === washId);
+      if (!wash) return;
+
+      const { error } = await supabase
+        .from('car_washes')
+        .update({ likes: wash.likes + 1 })
+        .eq('id', washId);
+
+      if (error) throw error;
+
+      setCarWashes(prev => prev.map(w => 
+        w.id === washId ? { ...w, likes: w.likes + 1 } : w
+      ));
+      
+      if (selectedWash?.id === washId) {
+        setSelectedWash(prev => prev ? { ...prev, likes: prev.likes + 1 } : null);
+      }
+    } catch (err) {
+      console.error('Error updating likes:', err);
+      setLikedWashes(prev => prev.filter(id => id !== washId));
     }
 
     setTimeout(() => setAnimatingLike(null), 600);
@@ -1543,7 +1777,6 @@ function App() {
           return;
         }
 
-        // Proste obliczenie dystansu (Euklidesowe wystarczy dla małych odległości)
         const nearest = washesOfType.reduce((prev, curr) => {
           const distPrev = Math.sqrt(Math.pow(prev.lat - latitude, 2) + Math.pow(prev.lng - longitude, 2));
           const distCurr = Math.sqrt(Math.pow(curr.lat - latitude, 2) + Math.pow(curr.lng - longitude, 2));
@@ -1566,6 +1799,16 @@ function App() {
   };
 
   useEffect(() => {
+    fetchCarWashes();
+    fetchPendingSubmissions();
+
+    // Sprawdź parametry URL (np. ?wash=id)
+    const params = new URLSearchParams(window.location.search);
+    const washId = params.get('wash');
+    if (washId) {
+      // Since carWashes might not be loaded yet, we'll need to check this in a separate useEffect or wait for load
+    }
+
     // Pobierz lokalizację użytkownika na starcie
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -1590,6 +1833,21 @@ function App() {
     return () => subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (carWashes.length > 0) {
+      const params = new URLSearchParams(window.location.search);
+      const washId = params.get('wash');
+      if (washId) {
+        const wash = carWashes.find(w => w.id === washId);
+        if (wash) {
+          setSelectedWash(wash);
+          setMapCenter([wash.lat, wash.lng]);
+          setActiveView('detail');
+        }
+      }
+    }
+  }, [carWashes]);
+
   const handleLogoClick = () => {
     const newCount = logoClicks + 1;
     if (newCount === 5) {
@@ -1607,69 +1865,169 @@ function App() {
     setIsAdmin(false);
   };
 
-  const handleAddWashSuccess = (newSubmission: any) => {
-    if (newSubmission.isPromotionRequest) {
-      // Automatycznie potwierdź wyróżnienie (płatność zasymulowana jako sukces)
-      setCarWashes(prev => prev.map(w => w.id === newSubmission.id ? { 
-        ...w, 
-        isPromoted: true, 
-        promotionText: newSubmission.promotionText 
-      } : w));
-      alert('Wyróżnienie zostało aktywowane pomyślnie! Twój punkt jest teraz promowany.');
-    } else {
-      setPendingWashes(prev => [newSubmission, ...prev]);
-      let message = 'Twoje zgłoszenie zostało wysłane do weryfikacji!';
-      if (newSubmission.isEdit) message = 'Zmiany zostały wysłane do akceptacji przez administratora!';
-      alert(message);
-    }
-    
-    setIsAddingWash(false);
-    setEditingWash(null);
-    setPromotingWash(null);
-  };
+  const mapToDb = (w: any) => ({
+    id: w.id,
+    name: w.name,
+    type: w.type,
+    address: w.address,
+    likes: w.likes,
+    lat: w.lat,
+    lng: w.lng,
+    is_queue: w.isQueue,
+    queue_status: w.queueStatus,
+    is_machine_working: w.isMachineWorking,
+    has_active_foam: w.hasActiveFoam,
+    is_promoted: w.isPromoted,
+    promotion_text: w.promotionText,
+    payment: w.payment,
+    equipment: w.equipment,
+    hours: w.hours,
+    opening_hours: w.openingHours,
+    phone: w.phone,
+    is_phone_visible: w.isPhoneVisible,
+    description: w.description,
+    services: w.services,
+    images: w.images,
+    rating: w.rating,
+    owner_email: w.ownerEmail,
+    user_reports: w.userReports,
+    analytics: w.analytics
+  });
 
-  const handleApproveWash = (id: string) => {
-    const washToApprove = pendingWashes.find(w => w.id === id);
-    if (washToApprove) {
-      if (washToApprove.isPromotionRequest) {
-        setCarWashes(prev => prev.map(w => w.id === washToApprove.id ? { 
+  const handleAddWashSuccess = async (newSubmission: any) => {
+    try {
+      if (newSubmission.isPromotionRequest) {
+        // Automatycznie potwierdź wyróżnienie w car_washes
+        const { error } = await supabase
+          .from('car_washes')
+          .update({ 
+            is_promoted: true, 
+            promotion_text: newSubmission.promotionText 
+          })
+          .eq('id', newSubmission.id);
+
+        if (error) throw error;
+
+        setCarWashes(prev => prev.map(w => w.id === newSubmission.id ? { 
           ...w, 
           isPromoted: true, 
-          promotionText: washToApprove.promotionText 
+          promotionText: newSubmission.promotionText 
         } : w));
-      } else if (washToApprove.isEdit) {
-        setCarWashes(prev => prev.map(w => w.id === washToApprove.id ? { ...washToApprove, status: 'approved' } : w));
+        alert('Wyróżnienie zostało aktywowane pomyślnie! Twój punkt jest teraz promowany.');
       } else {
-        setCarWashes(prev => [{...washToApprove, status: 'approved'}, ...prev]);
+        // Zapisz zgłoszenie do pending_submissions
+        const dbSubmission = {
+          ...mapToDb(newSubmission),
+          status: 'pending',
+          is_edit: newSubmission.isEdit,
+          is_promotion_request: newSubmission.isPromotionRequest,
+          duration_days: newSubmission.durationDays
+        };
+
+        const { error } = await supabase
+          .from('pending_submissions')
+          .insert([dbSubmission]);
+
+        if (error) throw error;
+
+        setPendingWashes(prev => [newSubmission, ...prev]);
+        let message = 'Twoje zgłoszenie zostało wysłane do weryfikacji!';
+        if (newSubmission.isEdit) message = 'Zmiany zostały wysłane do akceptacji przez administratora!';
+        alert(message);
       }
-      setPendingWashes(prev => prev.filter(w => w.id !== id));
+    } catch (err) {
+      console.error('Error saving submission:', err);
+      alert('Wystąpił błąd podczas zapisywania. Spróbuj ponownie.');
+    } finally {
+      setIsAddingWash(false);
+      setEditingWash(null);
+      setPromotingWash(null);
     }
   };
 
-  const handleRejectWash = (id: string) => {
-    setPendingWashes(prev => prev.filter(w => w.id !== id));
+  const handleApproveWash = async (id: string) => {
+    try {
+      const washToApprove = pendingWashes.find(w => w.id === id);
+      if (!washToApprove) return;
+
+      const dbWash = mapToDb(washToApprove);
+
+      if (washToApprove.isEdit) {
+        const { error: updateError } = await supabase
+          .from('car_washes')
+          .update(dbWash)
+          .eq('id', washToApprove.id);
+        if (updateError) throw updateError;
+
+        setCarWashes(prev => prev.map(w => w.id === washToApprove.id ? { ...washToApprove } : w));
+      } else {
+        const { error: insertError } = await supabase
+          .from('car_washes')
+          .insert([dbWash]);
+        if (insertError) throw insertError;
+
+        setCarWashes(prev => [{ ...washToApprove }, ...prev]);
+      }
+
+      // Mark as approved in pending_submissions
+      const { error: statusError } = await supabase
+        .from('pending_submissions')
+        .update({ status: 'approved' })
+        .eq('id', id);
+      if (statusError) throw statusError;
+
+      setPendingWashes(prev => prev.filter(w => w.id !== id));
+      alert('Punkt został zatwierdzony i dodany do bazy!');
+    } catch (err) {
+      console.error('Error approving wash:', err);
+      alert('Wystąpił błąd podczas zatwierdzania.');
+    }
   };
 
-  const handleNavigate = (wash: CarWash) => {
+  const handleRejectWash = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('pending_submissions')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setPendingWashes(prev => prev.filter(w => w.id !== id));
+      alert('Zgłoszenie zostało odrzucone.');
+    } catch (err) {
+      console.error('Error rejecting wash:', err);
+      alert('Wystąpił błąd podczas odrzucania.');
+    }
+  };
+
+  const handleNavigate = async (wash: CarWash) => {
     const url = `https://www.google.com/maps/dir/?api=1&destination=${wash.lat},${wash.lng}`;
     window.open(url, '_blank');
 
-    // Increment navigation analytics
-    setCarWashes(prev => prev.map(w => {
-      if (w.id === wash.id) {
-        return {
-          ...w,
-          analytics: {
-            ...(w.analytics || { views: 0, navigationClicks: 0, phoneClicks: 0, last7Days: [0,0,0,0,0,0,0] }),
-            navigationClicks: (w.analytics?.navigationClicks || 0) + 1
-          }
-        };
-      }
-      return w;
-    }));
+    try {
+      const newAnalytics = {
+        ...(wash.analytics || { views: 0, navigationClicks: 0, phoneClicks: 0, last7Days: [0,0,0,0,0,0,0] }),
+        navigationClicks: (wash.analytics?.navigationClicks || 0) + 1
+      };
+
+      await supabase
+        .from('car_washes')
+        .update({ analytics: newAnalytics })
+        .eq('id', wash.id);
+
+      setCarWashes(prev => prev.map(w => {
+        if (w.id === wash.id) {
+          return { ...w, analytics: newAnalytics };
+        }
+        return w;
+      }));
+    } catch (err) {
+      console.error('Error updating analytics:', err);
+    }
   };
 
-  const handleReportQueue = (washId: string, status: 'brak' | 'mała' | 'duża') => {
+  const handleReportQueue = async (washId: string, status: 'brak' | 'mała' | 'duża') => {
     if (!userLocation) {
       alert("Musimy znać Twoją lokalizację, abyś mógł zgłosić kolejkę.");
       return;
@@ -1702,46 +2060,88 @@ function App() {
       return;
     }
 
-    // Aktualizuj stan
-    setCarWashes(prev => prev.map(w => {
-      if (w.id === washId) {
-        return {
-          ...w,
-          queueStatus: status,
-          userReports: {
-            status,
-            timestamp: Date.now(),
-            userId: user?.id || 'anonymous'
-          }
-        };
-      }
-      return w;
-    }));
+    try {
+      const newReport = {
+        status,
+        timestamp: Date.now(),
+        userId: user?.id || 'anonymous'
+      };
 
-    alert("Dziękujemy! Twoje zgłoszenie zostało dodane i jest widoczne dla innych.");
+      const { error } = await supabase
+        .from('car_washes')
+        .update({ 
+          queue_status: status,
+          user_reports: newReport
+        })
+        .eq('id', washId);
+
+      if (error) throw error;
+
+      // Aktualizuj stan
+      setCarWashes(prev => prev.map(w => {
+        if (w.id === washId) {
+          return {
+            ...w,
+            queueStatus: status,
+            userReports: newReport
+          };
+        }
+        return w;
+      }));
+
+      alert("Dziękujemy! Twoje zgłoszenie zostało dodane i jest widoczne dla innych.");
+    } catch (err) {
+      console.error('Error reporting queue:', err);
+      alert('Wystąpił błąd podczas zgłaszania.');
+    }
   };
 
-  const handlePhoneClick = (wash: CarWash) => {
+  const handlePhoneClick = async (wash: CarWash) => {
     if (!wash.phone) return;
     window.open(`tel:${wash.phone}`, '_self');
 
-    // Increment phone analytics
-    setCarWashes(prev => prev.map(w => {
-      if (w.id === wash.id) {
-        return {
-          ...w,
-          analytics: {
-            ...(w.analytics || { views: 0, navigationClicks: 0, phoneClicks: 0, last7Days: [0,0,0,0,0,0,0] }),
-            phoneClicks: (w.analytics?.phoneClicks || 0) + 1
-          }
-        };
-      }
-      return w;
-    }));
+    try {
+      const newAnalytics = {
+        ...(wash.analytics || { views: 0, navigationClicks: 0, phoneClicks: 0, last7Days: [0,0,0,0,0,0,0] }),
+        phoneClicks: (wash.analytics?.phoneClicks || 0) + 1
+      };
+
+      await supabase
+        .from('car_washes')
+        .update({ analytics: newAnalytics })
+        .eq('id', wash.id);
+
+      setCarWashes(prev => prev.map(w => {
+        if (w.id === wash.id) {
+          return { ...w, analytics: newAnalytics };
+        }
+        return w;
+      }));
+    } catch (err) {
+      console.error('Error updating analytics:', err);
+    }
   };
 
-  const handleUpdateSubmission = (updatedWash: any) => {
-    setPendingWashes(prev => prev.map(w => w.id === updatedWash.id ? updatedWash : w));
+  const handleUpdateSubmission = async (updatedWash: any) => {
+    try {
+      const dbWash = {
+        ...mapToDb(updatedWash),
+        is_edit: updatedWash.isEdit,
+        is_promotion_request: updatedWash.isPromotionRequest,
+        duration_days: updatedWash.durationDays
+      };
+
+      const { error } = await supabase
+        .from('pending_submissions')
+        .update(dbWash)
+        .eq('id', updatedWash.id);
+
+      if (error) throw error;
+
+      setPendingWashes(prev => prev.map(w => w.id === updatedWash.id ? updatedWash : w));
+    } catch (err) {
+      console.error('Error updating submission:', err);
+    }
   };
 
   const filteredAndSortedWashes = useMemo(() => {
@@ -1816,24 +2216,31 @@ function App() {
     setSelectedType('all');
   };
 
-  const handleWashClick = (wash: CarWash) => {
+  const handleWashClick = async (wash: CarWash) => {
     setSelectedWash(wash);
     setMapCenter([wash.lat, wash.lng]);
     setActiveView('detail');
     
-    // Increment view analytics
-    setCarWashes(prev => prev.map(w => {
-      if (w.id === wash.id) {
-        return {
-          ...w,
-          analytics: {
-            ...(w.analytics || { views: 0, navigationClicks: 0, phoneClicks: 0, last7Days: [0,0,0,0,0,0,0] }),
-            views: (w.analytics?.views || 0) + 1
-          }
-        };
-      }
-      return w;
-    }));
+    try {
+      const newAnalytics = {
+        ...(wash.analytics || { views: 0, navigationClicks: 0, phoneClicks: 0, last7Days: [0,0,0,0,0,0,0] }),
+        views: (wash.analytics?.views || 0) + 1
+      };
+
+      await supabase
+        .from('car_washes')
+        .update({ analytics: newAnalytics })
+        .eq('id', wash.id);
+
+      setCarWashes(prev => prev.map(w => {
+        if (w.id === wash.id) {
+          return { ...w, analytics: newAnalytics };
+        }
+        return w;
+      }));
+    } catch (err) {
+      console.error('Error updating analytics:', err);
+    }
   };
 
   const handleMarkerClick = (wash: CarWash) => {
@@ -1862,6 +2269,16 @@ function App() {
           <WeatherModal 
             onBack={() => setViewingWeather(false)} 
             userLocation={userLocation}
+          />
+        </div>
+      )}
+
+      {/* Share Modal Overlay */}
+      {viewingShare && (
+        <div className="fixed inset-0 z-[4000] bg-black animate-slide-up overflow-y-auto no-scrollbar p-6">
+          <ShareModal 
+            wash={viewingShare} 
+            onBack={() => setViewingShare(null)} 
           />
         </div>
       )}
@@ -2244,7 +2661,7 @@ function App() {
         )}
 
         {activeView === 'list' && (
-          <div className="p-4 space-y-4 bg-black no-scrollbar overflow-y-auto">
+          <div className="p-4 space-y-4 bg-black no-scrollbar overflow-y-auto pb-32">
             {/* Sort Bar */}
             <div className="flex items-center gap-2 pb-2 overflow-x-auto no-scrollbar">
               <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest whitespace-nowrap mr-1">Sortuj:</span>
@@ -2295,7 +2712,7 @@ function App() {
         )}
 
         {activeView === 'detail' && selectedWash && (
-          <div className="fixed inset-0 z-[2000] bg-black animate-slide-up overflow-y-auto no-scrollbar">
+          <div className="fixed inset-0 z-[2000] bg-black animate-slide-up overflow-y-auto no-scrollbar pb-32">
             {/* Drag Handle for visual cue */}
             <div className="absolute top-2 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-white/20 rounded-full z-[2010] pointer-events-none"></div>
             
@@ -2380,6 +2797,13 @@ function App() {
                           )}
                       </button>
                     </div>
+                    <button 
+                      onClick={() => setViewingShare(selectedWash)}
+                      className="p-3 bg-zinc-900 border-2 border-zinc-800 rounded-2xl text-gold hover:border-gold transition-all active:scale-90 shadow-sm"
+                      title="Udostępnij"
+                    >
+                      <Share2 className="w-6 h-6" />
+                    </button>
                     <div>
                       <span className="font-black text-2xl text-gold block leading-none">{selectedWash.likes}</span>
                       <span className="text-gray-500 text-[9px] font-black uppercase tracking-widest">Polubień</span>
@@ -2567,7 +2991,7 @@ function App() {
         )}
 
         {activeView === 'b2b' && (
-          <div className="fixed inset-0 z-[2000] bg-black animate-slide-up overflow-y-auto no-scrollbar p-6 space-y-6 font-medium pb-24">
+          <div className="fixed inset-0 z-[2000] bg-black animate-slide-up overflow-y-auto no-scrollbar p-6 space-y-6 font-medium pb-32">
             <div className="absolute top-2 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-white/20 rounded-full z-[2010] pointer-events-none"></div>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-black text-gold uppercase italic tracking-tighter">Panel Biznesowy</h2>
