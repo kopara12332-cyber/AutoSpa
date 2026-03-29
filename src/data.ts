@@ -35,6 +35,12 @@ export interface CarWash {
     timestamp: number;
     userId: string;
   };
+  analytics?: {
+    views: number;
+    navigationClicks: number;
+    phoneClicks: number;
+    last7Days: number[];
+  };
 }
 
 export const mockCarWashes: CarWash[] = [
@@ -67,7 +73,13 @@ export const mockCarWashes: CarWash[] = [
     services: ['Powłoki ceramiczne', 'Korekta lakieru', 'Pranie tapicerki', 'Czyszczenie skór'],
     rating: 4.9,
     ownerEmail: 'admin@luxury-shine.pl',
-    images: ['https://images.unsplash.com/photo-1601362840469-51e4d8d59085?q=80&w=1000&auto=format&fit=crop']
+    images: ['https://images.unsplash.com/photo-1601362840469-51e4d8d59085?q=80&w=1000&auto=format&fit=crop'],
+    analytics: {
+      views: 1248,
+      navigationClicks: 342,
+      phoneClicks: 89,
+      last7Days: [120, 145, 190, 160, 210, 240, 183]
+    }
   },
   {
     id: 'cw_2',
@@ -85,10 +97,19 @@ export const mockCarWashes: CarWash[] = [
     equipment: ['Odkurzacz', 'Kompresor', 'Czernidło do opon', 'Rozmieniarka'],
     hours: '24/7 (Całodobowo)',
     openingHours: { is24h: true },
+    isPromoted: true,
+    promotionText: 'Happy Hour: -20% do 06:00!',
+    ownerEmail: 'demo@demo.pl',
     description: 'Nowoczesna myjnia 6-stanowiskowa z najnowszą technologią mikroproszku Ehrle.',
     services: ['Turbopiana', 'Mycie podwozia', 'Woskowanie na gorąco', 'Nabłyszczanie'],
     rating: 4.5,
-    images: ['https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?q=80&w=1000&auto=format&fit=crop']
+    images: ['https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?q=80&w=1000&auto=format&fit=crop'],
+    analytics: {
+      views: 856,
+      navigationClicks: 124,
+      phoneClicks: 32,
+      last7Days: [80, 95, 110, 130, 105, 140, 196]
+    }
   },
   {
     id: 'cw_3',

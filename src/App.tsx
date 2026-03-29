@@ -1041,6 +1041,91 @@ function AdminPanel({ submissions, onAccept, onReject, onUpdate, onBack }: { sub
   );
 }
 
+function OwnerAnalytics({ wash, onBack }: { wash: CarWash, onBack: () => void }) {
+  const stats = wash.analytics || {
+    views: 0,
+    navigationClicks: 0,
+    phoneClicks: 0,
+    last7Days: [0, 0, 0, 0, 0, 0, 0]
+  };
+
+  const maxVal = Math.max(...stats.last7Days, 1);
+
+  return (
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="flex items-center gap-3 border-b border-gold/20 pb-4">
+        <button onClick={onBack} className="text-gray-500 hover:text-white">
+          <Navigation className="w-6 h-6 rotate-180" />
+        </button>
+        <div>
+          <h2 className="text-xl font-black text-gold uppercase italic tracking-tighter">Statystyki Punktu</h2>
+          <p className="text-[10px] text-gray-500 uppercase font-black">{wash.name}</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4">
+        <div className="bg-zinc-900/50 p-6 rounded-[2.5rem] border border-white/5 space-y-4">
+          <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] flex items-center gap-2">
+            <TrendingDown className="w-4 h-4 text-gold" /> Popularność (7 dni)
+          </h3>
+          <div className="flex items-end justify-between h-32 gap-2 px-2">
+            {stats.last7Days.map((val, i) => (
+              <div key={i} className="flex-1 flex flex-col items-center gap-2">
+                <div 
+                  className="w-full bg-gold/20 rounded-t-lg border-t border-x border-gold/30 relative group"
+                  style={{ height: `${(val / maxVal) * 100}%` }}
+                >
+                  <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-gold text-black text-[8px] font-black px-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                    {val}
+                  </div>
+                </div>
+                <span className="text-[7px] text-gray-600 font-black uppercase">Dzień {i+1}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-zinc-900/50 p-5 rounded-[2rem] border border-white/5">
+            <p className="text-[9px] text-gray-500 font-black uppercase tracking-widest mb-1">Wyświetlenia</p>
+            <p className="text-2xl font-black text-white italic">{stats.views.toLocaleString()}</p>
+            <div className="mt-2 flex items-center gap-1 text-[8px] text-emerald-500 font-black">
+              <Plus className="w-2.5 h-2.5" /> 12% vs ost. tydzień
+            </div>
+          </div>
+          <div className="bg-zinc-900/50 p-5 rounded-[2rem] border border-white/5">
+            <p className="text-[9px] text-gray-500 font-black uppercase tracking-widest mb-1">Nawigacje</p>
+            <p className="text-2xl font-black text-gold italic">{stats.navigationClicks.toLocaleString()}</p>
+            <div className="mt-2 flex items-center gap-1 text-[8px] text-emerald-500 font-black">
+              <Plus className="w-2.5 h-2.5" /> 8% vs ost. tydzień
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-gold/5 p-6 rounded-[2.5rem] border border-gold/20">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-[10px] font-black text-white uppercase tracking-widest italic">Konwersja</h3>
+            <span className="text-[10px] font-black text-gold">{( (stats.navigationClicks / stats.views) * 100).toFixed(1)}%</span>
+          </div>
+          <div className="w-full h-1.5 bg-black/40 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-luxury-gold" 
+              style={{ width: `${(stats.navigationClicks / stats.views) * 100}%` }}
+            />
+          </div>
+          <p className="text-[8px] text-gray-500 mt-3 leading-relaxed">
+            Ten wskaźnik pokazuje, ilu użytkowników po zobaczeniu Twojego punktu zdecydowało się do niego nawigować.
+          </p>
+        </div>
+      </div>
+
+      <button className="w-full py-4 bg-zinc-900 text-gold border border-gold/50 rounded-2xl font-black uppercase italic tracking-widest shadow-xl hover:bg-zinc-800 transition-all active:scale-95">
+        Pobierz raport PDF
+      </button>
+    </div>
+  );
+}
+
 function App() {
   const [activeView, setActiveView] = useState<View>('map');
   const [selectedType, setSelectedType] = useState<CarWashType | 'all'>('all');
@@ -1049,6 +1134,7 @@ function App() {
   const [user, setUser] = useState<User | null>(null);
   const [isAddingWash, setIsAddingWash] = useState(false);
   const [editingWash, setEditingWash] = useState<any | null>(null);
+  const [viewingAnalytics, setViewingAnalytics] = useState<CarWash | null>(null);
   const [carWashes, setCarWashes] = useState<CarWash[]>(mockCarWashes);
   const [likedWashes, setLikedWashes] = useState<string[]>([]);
   const [animatingLike, setAnimatingLike] = useState<string | null>(null);
@@ -1199,6 +1285,20 @@ function App() {
   const handleNavigate = (wash: CarWash) => {
     const url = `https://www.google.com/maps/dir/?api=1&destination=${wash.lat},${wash.lng}`;
     window.open(url, '_blank');
+
+    // Increment navigation analytics
+    setCarWashes(prev => prev.map(w => {
+      if (w.id === wash.id) {
+        return {
+          ...w,
+          analytics: {
+            ...(w.analytics || { views: 0, navigationClicks: 0, phoneClicks: 0, last7Days: [0,0,0,0,0,0,0] }),
+            navigationClicks: (w.analytics?.navigationClicks || 0) + 1
+          }
+        };
+      }
+      return w;
+    }));
   };
 
   const handleReportQueue = (washId: string, status: 'brak' | 'mała' | 'duża') => {
@@ -1251,6 +1351,25 @@ function App() {
     }));
 
     alert("Dziękujemy! Twoje zgłoszenie zostało dodane i jest widoczne dla innych.");
+  };
+
+  const handlePhoneClick = (wash: CarWash) => {
+    if (!wash.phone) return;
+    window.open(`tel:${wash.phone}`, '_self');
+
+    // Increment phone analytics
+    setCarWashes(prev => prev.map(w => {
+      if (w.id === wash.id) {
+        return {
+          ...w,
+          analytics: {
+            ...(w.analytics || { views: 0, navigationClicks: 0, phoneClicks: 0, last7Days: [0,0,0,0,0,0,0] }),
+            phoneClicks: (w.analytics?.phoneClicks || 0) + 1
+          }
+        };
+      }
+      return w;
+    }));
   };
 
   const handleUpdateSubmission = (updatedWash: any) => {
@@ -1333,6 +1452,20 @@ function App() {
     setSelectedWash(wash);
     setMapCenter([wash.lat, wash.lng]);
     setActiveView('detail');
+    
+    // Increment view analytics
+    setCarWashes(prev => prev.map(w => {
+      if (w.id === wash.id) {
+        return {
+          ...w,
+          analytics: {
+            ...(w.analytics || { views: 0, navigationClicks: 0, phoneClicks: 0, last7Days: [0,0,0,0,0,0,0] }),
+            views: (w.analytics?.views || 0) + 1
+          }
+        };
+      }
+      return w;
+    }));
   };
 
   const handleMarkerClick = (wash: CarWash) => {
@@ -2014,13 +2147,16 @@ function App() {
                 )}
 
                 {selectedWash.phone && selectedWash.isPhoneVisible && (
-                  <div className="flex items-start gap-3">
-                    <Phone className="w-5 h-5 text-gold flex-shrink-0" />
+                  <button 
+                    onClick={() => handlePhoneClick(selectedWash)}
+                    className="flex items-start gap-3 w-full text-left group"
+                  >
+                    <Phone className="w-5 h-5 text-gold flex-shrink-0 group-hover:scale-110 transition-transform" />
                     <div>
                       <h4 className="text-[10px] font-black text-gold uppercase tracking-widest">Kontakt</h4>
                       <p className="text-sm text-gray-300 font-bold tracking-widest">{selectedWash.phone}</p>
                     </div>
-                  </div>
+                  </button>
                 )}
               </div>
             </div>
@@ -2055,6 +2191,11 @@ function App() {
                 onSuccess={handleAddWashSuccess}
                 initialData={editingWash}
                 userEmail={user.email}
+              />
+            ) : viewingAnalytics ? (
+              <OwnerAnalytics 
+                wash={viewingAnalytics} 
+                onBack={() => setViewingAnalytics(null)} 
               />
             ) : (
               <div className="space-y-6">
@@ -2093,12 +2234,22 @@ function App() {
                             <h4 className="text-sm font-black text-white uppercase italic">{wash.name}</h4>
                             <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest">{wash.address}</p>
                           </div>
-                          <button 
-                            onClick={() => setEditingWash(wash)}
-                            className="p-2.5 bg-zinc-900 border border-gold/30 rounded-xl text-gold hover:bg-zinc-800 transition-all active:scale-95"
-                          >
-                            <Edit3 className="w-4 h-4" />
-                          </button>
+                          <div className="flex gap-2">
+                            <button 
+                              onClick={() => setViewingAnalytics(wash)}
+                              className="p-2.5 bg-zinc-900 border border-gold/30 rounded-xl text-gold hover:bg-zinc-800 transition-all active:scale-95"
+                              title="Statystyki"
+                            >
+                              <TrendingDown className="w-4 h-4" />
+                            </button>
+                            <button 
+                              onClick={() => setEditingWash(wash)}
+                              className="p-2.5 bg-zinc-900 border border-gold/30 rounded-xl text-gold hover:bg-zinc-800 transition-all active:scale-95"
+                              title="Edytuj"
+                            >
+                              <Edit3 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </div>
                       ))}
                       <button 
@@ -2123,12 +2274,22 @@ function App() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-zinc-900 p-4 rounded-3xl border border-white/10 shadow-sm">
-                      <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Zasięg</p>
-                      <p className="text-2xl font-black text-gold">1,248</p>
+                      <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Zasięg (Suma)</p>
+                      <p className="text-2xl font-black text-gold">
+                        {carWashes
+                          .filter(w => w.ownerEmail === user?.email)
+                          .reduce((sum, w) => sum + (w.analytics?.views || 0), 0)
+                          .toLocaleString()}
+                      </p>
                   </div>
                   <div className="bg-zinc-900 p-4 rounded-3xl border border-white/10 shadow-sm">
-                      <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Kliki</p>
-                      <p className="text-2xl font-black text-gold">342</p>
+                      <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Interakcje</p>
+                      <p className="text-2xl font-black text-gold">
+                        {carWashes
+                          .filter(w => w.ownerEmail === user?.email)
+                          .reduce((sum, w) => sum + (w.analytics?.navigationClicks || 0) + (w.analytics?.phoneClicks || 0), 0)
+                          .toLocaleString()}
+                      </p>
                   </div>
                 </div>
 
