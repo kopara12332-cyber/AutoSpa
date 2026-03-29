@@ -1494,12 +1494,13 @@ function App() {
                  <Sparkles className="w-4 h-4 text-white animate-pulse drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
                </div>
              </div>
-             <div className="flex flex-col -gap-1">
-               <h1 className="text-2xl font-black tracking-tighter italic uppercase text-gold select-none leading-tight">AutoSpa</h1>
-               <div className="flex items-center gap-1 overflow-hidden">
-                 <div className="h-[1px] w-4 bg-gold/40" />
-                 <span className="text-[7px] font-black uppercase tracking-[0.3em] text-gold/60">Premium</span>
-                 <div className="h-[1px] w-full bg-gold/40" />
+             <div className="flex flex-col relative">
+               <h1 className="text-2xl font-black tracking-[-0.05em] italic uppercase text-white select-none leading-none">
+                 Auto<span className="text-gold drop-shadow-[0_0_10px_rgba(212,175,55,0.3)]">Spa</span>
+               </h1>
+               <div className="flex items-center gap-1 mt-0.5">
+                 <div className="h-[2px] w-full bg-gradient-to-r from-gold/60 to-transparent rounded-full" />
+                 <div className="w-1 h-1 rounded-full bg-gold animate-pulse" />
                </div>
              </div>
           </div>
