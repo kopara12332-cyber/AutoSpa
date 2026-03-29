@@ -29,6 +29,7 @@ export interface CarWash {
   services?: string[];
   images?: string[];
   rating?: number;
+  ownerEmail?: string;
 }
 
 export const mockCarWashes: CarWash[] = [
@@ -45,7 +46,8 @@ export const mockCarWashes: CarWash[] = [
     isMachineWorking: true,
     hasActiveFoam: true,
     isPromoted: true,
-    promotionText: 'Happy Hour: -20% do 06:00!'
+    promotionText: 'Happy Hour: -20% do 06:00!',
+    ownerEmail: 'demo@demo.pl'
   },
   {
     id: '2',

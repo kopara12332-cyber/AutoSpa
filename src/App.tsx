@@ -118,8 +118,8 @@ const GLOBAL_SPECS = {
   ]
 };
 
-function AddWashForm({ onCancel, onSuccess }: { onCancel: () => void, onSuccess: (wash: any) => void }) {
-  const [formData, setFormData] = useState({
+function AddWashForm({ onCancel, onSuccess, initialData, userEmail }: { onCancel: () => void, onSuccess: (wash: any) => void, initialData?: any, userEmail?: string }) {
+  const [formData, setFormData] = useState(initialData || {
     name: '',
     address: '',
     type: 'bezdotykowa' as CarWashType,
@@ -196,14 +196,16 @@ function AddWashForm({ onCancel, onSuccess }: { onCancel: () => void, onSuccess:
     const newSubmission = {
       ...formData,
       hours: hoursText,
-      id: Math.random().toString(36).substr(2, 9),
-      likes: 0,
-      isQueue: false,
-      queueStatus: 'brak',
-      isMachineWorking: true,
+      id: initialData ? initialData.id : Math.random().toString(36).substr(2, 9),
+      ownerEmail: initialData ? initialData.ownerEmail : userEmail,
+      likes: initialData ? initialData.likes : 0,
+      isQueue: initialData ? initialData.isQueue : false,
+      queueStatus: initialData ? initialData.queueStatus : 'brak',
+      isMachineWorking: initialData ? initialData.isMachineWorking : true,
       hasActiveFoam: formData.services.some(s => s.toLowerCase().includes('aktywna piana')),
-      isPromoted: false,
-      status: 'pending' as 'pending' | 'approved'
+      isPromoted: initialData ? initialData.isPromoted : false,
+      status: 'pending' as 'pending' | 'approved',
+      isEdit: !!initialData
     };
 
     setTimeout(() => {
@@ -216,7 +218,9 @@ function AddWashForm({ onCancel, onSuccess }: { onCancel: () => void, onSuccess:
     <div className="space-y-6 animate-in fade-in zoom-in-95 duration-300 pb-10">
       <div className="flex items-center gap-3 border-b border-gold/20 pb-4">
         <button onClick={onCancel} className="text-gray-500 hover:text-white"><Navigation className="w-6 h-6 rotate-180" /></button>
-        <h2 className="text-xl font-black text-gold uppercase italic tracking-tighter">Nowa Myjnia</h2>
+        <h2 className="text-xl font-black text-gold uppercase italic tracking-tighter">
+          {initialData ? 'Edytuj Punkt' : 'Nowa Myjnia'}
+        </h2>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -919,10 +923,21 @@ function AdminPanel({ submissions, onAccept, onReject, onUpdate, onBack }: { sub
           <div className="text-center py-20 text-gray-600 italic">Brak nowych zgłoszeń.</div>
         ) : (
           submissions.map(sub => (
-            <div key={sub.id} className="bg-zinc-900 border border-gold/20 p-4 rounded-2xl space-y-3">
+            <div key={sub.id} className={cn(
+              "bg-zinc-900 border p-4 rounded-2xl space-y-3",
+              sub.isEdit ? "border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.1)]" : "border-gold/20"
+            )}>
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="font-black text-white uppercase italic">{sub.name}</h3>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-black text-white uppercase italic">{sub.name}</h3>
+                    <span className={cn(
+                      "text-[7px] px-1.5 py-0.5 rounded-full font-black uppercase tracking-widest",
+                      sub.isEdit ? "bg-blue-500 text-white" : "bg-gold text-black"
+                    )}>
+                      {sub.isEdit ? 'Edycja' : 'Nowy'}
+                    </span>
+                  </div>
                   <p className="text-[10px] text-gray-500">{sub.address}</p>
                 </div>
                 <span className="text-[8px] bg-gold/10 text-gold px-2 py-0.5 rounded-full font-black uppercase">{sub.type}</span>
@@ -972,6 +987,7 @@ function App() {
   const [mapCenter, setMapCenter] = useState<[number, number]>([52.2297, 21.0122]);
   const [user, setUser] = useState<User | null>(null);
   const [isAddingWash, setIsAddingWash] = useState(false);
+  const [editingWash, setEditingWash] = useState<any | null>(null);
   const [carWashes, setCarWashes] = useState<CarWash[]>(mockCarWashes);
   const [likedWashes, setLikedWashes] = useState<string[]>([]);
   const [animatingLike, setAnimatingLike] = useState<string | null>(null);
@@ -1098,13 +1114,18 @@ function App() {
   const handleAddWashSuccess = (newSubmission: any) => {
     setPendingWashes(prev => [newSubmission, ...prev]);
     setIsAddingWash(false);
-    alert('Twoje zgłoszenie zostało wysłane do weryfikacji!');
+    setEditingWash(null);
+    alert(newSubmission.isEdit ? 'Zmiany zostały wysłane do akceptacji przez administratora!' : 'Twoje zgłoszenie zostało wysłane do weryfikacji!');
   };
 
   const handleApproveWash = (id: string) => {
     const washToApprove = pendingWashes.find(w => w.id === id);
     if (washToApprove) {
-      setCarWashes(prev => [{...washToApprove, status: 'approved'}, ...prev]);
+      if (washToApprove.isEdit) {
+        setCarWashes(prev => prev.map(w => w.id === washToApprove.id ? { ...washToApprove, status: 'approved' } : w));
+      } else {
+        setCarWashes(prev => [{...washToApprove, status: 'approved'}, ...prev]);
+      }
       setPendingWashes(prev => prev.filter(w => w.id !== id));
     }
   };
@@ -1851,8 +1872,13 @@ function App() {
               />
             ) : !user ? (
               <AuthUI />
-            ) : isAddingWash ? (
-              <AddWashForm onCancel={() => setIsAddingWash(false)} onSuccess={handleAddWashSuccess} />
+            ) : isAddingWash || editingWash ? (
+              <AddWashForm 
+                onCancel={() => { setIsAddingWash(false); setEditingWash(null); }} 
+                onSuccess={handleAddWashSuccess}
+                initialData={editingWash}
+                userEmail={user.email}
+              />
             ) : (
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
@@ -1881,15 +1907,41 @@ function App() {
                   <h3 className="font-black flex items-center gap-2 text-gold text-xs uppercase tracking-widest">
                     <TrendingDown className="w-5 h-5 text-gold" /> Twoje Myjnie
                   </h3>
-                  <div className="p-4 bg-black/40 rounded-2xl border-2 border-dashed border-zinc-800 text-center">
-                    <p className="text-sm text-gray-500 mb-2 font-bold italic">Brak zarejestrowanych myjni.</p>
-                    <button 
-                      onClick={() => setIsAddingWash(true)}
-                      className="text-gold text-xs font-black uppercase tracking-widest hover:text-white transition-colors flex items-center gap-2 mx-auto"
-                    >
-                      <Plus className="w-4 h-4" /> Zgłoś nową myjnię
-                    </button>
-                  </div>
+                  
+                  {carWashes.filter(w => w.ownerEmail === user?.email).length > 0 ? (
+                    <div className="space-y-3">
+                      {carWashes.filter(w => w.ownerEmail === user?.email).map(wash => (
+                        <div key={wash.id} className="p-4 bg-black/40 rounded-2xl border border-zinc-800 flex justify-between items-center">
+                          <div>
+                            <h4 className="text-sm font-black text-white uppercase italic">{wash.name}</h4>
+                            <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest">{wash.address}</p>
+                          </div>
+                          <button 
+                            onClick={() => setEditingWash(wash)}
+                            className="p-2.5 bg-zinc-900 border border-gold/30 rounded-xl text-gold hover:bg-zinc-800 transition-all active:scale-95"
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                      <button 
+                        onClick={() => setIsAddingWash(true)}
+                        className="w-full py-3 border-2 border-dashed border-zinc-800 rounded-2xl text-gray-500 text-[10px] font-black uppercase tracking-widest hover:border-gold/30 hover:text-gold transition-all"
+                      >
+                        + Dodaj kolejny punkt
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="p-4 bg-black/40 rounded-2xl border-2 border-dashed border-zinc-800 text-center">
+                      <p className="text-sm text-gray-500 mb-2 font-bold italic">Brak zarejestrowanych myjni.</p>
+                      <button 
+                        onClick={() => setIsAddingWash(true)}
+                        className="text-gold text-xs font-black uppercase tracking-widest hover:text-white transition-colors flex items-center gap-2 mx-auto"
+                      >
+                        <Plus className="w-4 h-4" /> Zgłoś nową myjnię
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
