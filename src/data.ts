@@ -27,6 +27,7 @@ export interface CarWash {
   isPhoneVisible?: boolean;
   description?: string;
   services?: string[];
+  images?: string[];
 }
 
 export const mockCarWashes: CarWash[] = [

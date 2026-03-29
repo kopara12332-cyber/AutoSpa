@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Map as MapIcon, List, Search, Filter, Car, Star, Navigation, AlertCircle, TrendingDown, Store, LogIn, Mail, Lock, LogOut, Plus, CheckCircle2, MapPin, Info, ShieldCheck, XCircle, Edit3, Save, CreditCard, Clock, FileText, Settings, Phone, Eye, EyeOff } from 'lucide-react';
+import { Map as MapIcon, List, Search, Filter, Car, Star, Navigation, AlertCircle, TrendingDown, Store, LogIn, Mail, Lock, LogOut, Plus, CheckCircle2, MapPin, Info, ShieldCheck, XCircle, Edit3, Save, CreditCard, Clock, FileText, Settings, Phone, Eye, EyeOff, Camera, Image as ImageIcon, Trash2 } from 'lucide-react';
 import { mockCarWashes } from './data';
 import type { CarWash, CarWashType } from './data';
 import { clsx, type ClassValue } from 'clsx';
@@ -136,8 +136,32 @@ function AddWashForm({ onCancel, onSuccess }: { onCancel: () => void, onSuccess:
     },
     phone: '',
     isPhoneVisible: true,
-    description: ''
+    description: '',
+    images: [] as string[]
   });
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      Array.from(files).forEach(file => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setFormData(prev => ({
+            ...prev,
+            images: [...prev.images, reader.result as string]
+          }));
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+  };
+
+  const removeImage = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
+  };
   const [loading, setLoading] = useState(false);
 
   const toggleItem = (field: 'services' | 'payment' | 'equipment', item: string) => {
@@ -419,6 +443,33 @@ function AddWashForm({ onCancel, onSuccess }: { onCancel: () => void, onSuccess:
             </div>
           </div>
 
+          {/* Zdjęcia */}
+          <div className="space-y-4 bg-zinc-900/50 p-4 rounded-3xl border border-white/5">
+            <h3 className="text-[10px] font-black text-gold uppercase tracking-[0.2em] mb-2 flex items-center gap-2"><Camera className="w-3 h-3" /> Zdjęcia punktu</h3>
+            <div className="grid grid-cols-4 gap-2">
+              {formData.images.map((img, idx) => (
+                <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-white/10 group">
+                  <img src={img} alt={`Preview ${idx}`} className="w-full h-full object-cover" />
+                  <button 
+                    type="button"
+                    onClick={() => removeImage(idx)}
+                    className="absolute top-1 right-1 p-1 bg-black/60 rounded-full text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+              {formData.images.length < 8 && (
+                <label className="aspect-square rounded-xl border-2 border-dashed border-zinc-800 flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-gold transition-colors text-gray-500 hover:text-gold bg-black/20">
+                  <Camera className="w-5 h-5" />
+                  <span className="text-[8px] font-black uppercase tracking-widest">Dodaj</span>
+                  <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} />
+                </label>
+              )}
+            </div>
+            <p className="text-[8px] text-gray-500 uppercase font-black ml-1">Maksymalnie 8 zdjęć. Pierwsze będzie zdjęciem głównym.</p>
+          </div>
+
           {/* Opis dodatkowy */}
           <div className="space-y-4 bg-zinc-900/50 p-4 rounded-3xl border border-white/5">
             <h3 className="text-[10px] font-black text-gold uppercase tracking-[0.2em] mb-2 flex items-center gap-2"><FileText className="w-3 h-3" /> Opis / Dodatkowe info</h3>
@@ -607,6 +658,29 @@ function AdminPanel({ submissions, onAccept, onReject, onUpdate, onBack }: { sub
     }));
   };
 
+  const handleEditImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      Array.from(files).forEach(file => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setEditData((prev: any) => ({
+            ...prev,
+            images: [...(prev.images || []), reader.result as string]
+          }));
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+  };
+
+  const removeEditImage = (index: number) => {
+    setEditData((prev: any) => ({
+      ...prev,
+      images: prev.images.filter((_: any, i: number) => i !== index)
+    }));
+  };
+
   return (
     <div className="space-y-6 py-4 animate-in fade-in duration-500 h-full flex flex-col">
       <div className="flex items-center justify-between border-b border-gold/20 pb-4 shrink-0">
@@ -787,6 +861,34 @@ function AdminPanel({ submissions, onAccept, onReject, onUpdate, onBack }: { sub
                       {service}
                     </button>
                   ))}
+                </div>
+              </div>
+
+              {/* Sekcja: Zdjęcia */}
+              <div className="space-y-4 pt-4 border-t border-white/5">
+                <h3 className="text-[10px] font-black text-gold uppercase tracking-[0.2em] flex items-center gap-2 opacity-70">
+                  <Camera className="w-3 h-3" /> Zdjęcia punktu
+                </h3>
+                <div className="grid grid-cols-4 gap-2">
+                  {(editData.images || []).map((img: string, idx: number) => (
+                    <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-white/10 group">
+                      <img src={img} alt={`Preview ${idx}`} className="w-full h-full object-cover" />
+                      <button 
+                        type="button"
+                        onClick={() => removeEditImage(idx)}
+                        className="absolute top-1 right-1 p-1 bg-black/60 rounded-full text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                  {(editData.images || []).length < 8 && (
+                    <label className="aspect-square rounded-xl border-2 border-dashed border-zinc-800 flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-gold transition-colors text-gray-500 hover:text-gold bg-black/20">
+                      <Camera className="w-5 h-5" />
+                      <span className="text-[8px] font-black uppercase tracking-widest">Dodaj</span>
+                      <input type="file" accept="image/*" multiple className="hidden" onChange={handleEditImageUpload} />
+                    </label>
+                  )}
                 </div>
               </div>
 
@@ -1028,15 +1130,34 @@ function App() {
 
         {activeView === 'detail' && selectedWash && (
           <div className="bg-black min-h-full">
-            <div className="relative h-48 bg-zinc-900">
-               <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent"></div>
+            <div className="relative h-64 bg-zinc-900 overflow-hidden">
+               {selectedWash.images && selectedWash.images.length > 0 ? (
+                 <div className="flex h-full overflow-x-auto snap-x scrollbar-hide no-scrollbar">
+                   {selectedWash.images.map((img, idx) => (
+                     <img key={idx} src={img} alt={`${selectedWash.name} ${idx}`} className="h-full min-w-full object-cover snap-center" />
+                   ))}
+                 </div>
+               ) : (
+                 <div className="absolute inset-0 flex items-center justify-center bg-zinc-800 text-zinc-700">
+                   <ImageIcon className="w-20 h-20 opacity-20" />
+                 </div>
+               )}
+               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent pointer-events-none"></div>
+               
                <button 
                  onClick={() => setActiveView('map')}
-                 className="absolute top-4 left-4 p-2 bg-black/40 hover:bg-black/60 rounded-full text-white backdrop-blur border border-white/20"
+                 className="absolute top-4 left-4 p-2 bg-black/40 hover:bg-black/60 rounded-full text-white backdrop-blur border border-white/20 z-10"
                >
                  <Navigation className="w-5 h-5 rotate-180" />
                </button>
-               <div className="absolute bottom-4 left-4 right-4 text-white">
+
+               {selectedWash.images && selectedWash.images.length > 1 && (
+                 <div className="absolute bottom-16 right-4 px-3 py-1 bg-black/60 backdrop-blur rounded-full text-[10px] font-black text-white border border-white/10 z-10">
+                   1 / {selectedWash.images.length}
+                 </div>
+               )}
+
+               <div className="absolute bottom-4 left-4 right-4 text-white z-10">
                  <h2 className="text-2xl font-black italic uppercase tracking-tighter text-gold">{selectedWash.name}</h2>
                  <p className="text-sm opacity-80 text-gray-300">{selectedWash.address}</p>
                </div>
