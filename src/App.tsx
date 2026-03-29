@@ -4,7 +4,7 @@ import { mockCarWashes } from './data';
 import type { CarWash, CarWashType } from './data';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import { supabase } from './supabaseClient';
 import type { User } from '@supabase/supabase-js';
@@ -62,6 +62,16 @@ function MapUpdater({ center }: { center: [number, number] }) {
     map.setView(center, map.getZoom());
   }, [center, map]);
   return null;
+}
+
+function LocationPicker({ onLocationSelect, position }: { onLocationSelect: (lat: number, lng: number) => void, position: [number, number] }) {
+  useMapEvents({
+    click(e) {
+      onLocationSelect(e.latlng.lat, e.latlng.lng);
+    },
+  });
+
+  return position ? <Marker position={position} /> : null;
 }
 
 type View = 'map' | 'list' | 'b2b' | 'detail';
@@ -250,6 +260,33 @@ function AddWashForm({ onCancel, onSuccess, initialData, userEmail }: { onCancel
                   value={formData.address}
                   onChange={e => setFormData({...formData, address: e.target.value})}
                 />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-1">Lokalizacja na mapie</label>
+              <div className="h-48 rounded-2xl overflow-hidden border-2 border-zinc-800 relative group">
+                <MapContainer center={[formData.lat, formData.lng]} zoom={13} className="h-full w-full" zoomControl={false}>
+                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                  <LocationPicker 
+                    position={[formData.lat, formData.lng]} 
+                    onLocationSelect={(lat, lng) => setFormData({...formData, lat, lng})} 
+                  />
+                  <MapUpdater center={[formData.lat, formData.lng]} />
+                </MapContainer>
+                <div className="absolute top-2 right-2 z-[1000] bg-black/60 backdrop-blur-md px-2 py-1 rounded-lg border border-white/10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
+                  <p className="text-[7px] text-gold font-black uppercase">Kliknij aby ustawić</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                <div className="bg-black/40 p-2 rounded-xl border border-white/5 flex flex-col">
+                  <span className="text-[7px] text-gray-500 font-black uppercase tracking-widest">Szerokość (Lat)</span>
+                  <span className="text-[10px] text-white font-mono">{formData.lat.toFixed(6)}</span>
+                </div>
+                <div className="bg-black/40 p-2 rounded-xl border border-white/5 flex flex-col">
+                  <span className="text-[7px] text-gray-500 font-black uppercase tracking-widest">Długość (Lng)</span>
+                  <span className="text-[10px] text-white font-mono">{formData.lng.toFixed(6)}</span>
+                </div>
               </div>
             </div>
 
@@ -718,6 +755,30 @@ function AdminPanel({ submissions, onAccept, onReject, onUpdate, onBack }: { sub
                     value={editData.address}
                     onChange={e => setEditData({...editData, address: e.target.value})}
                   />
+                </div>
+
+                <div className="space-y-1 pt-2">
+                  <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-1">Pozycja na mapie</label>
+                  <div className="h-40 rounded-2xl overflow-hidden border-2 border-zinc-800 relative">
+                    <MapContainer center={[editData.lat || 52.2297, editData.lng || 21.0122]} zoom={13} className="h-full w-full" zoomControl={false}>
+                      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                      <LocationPicker 
+                        position={[editData.lat || 52.2297, editData.lng || 21.0122]} 
+                        onLocationSelect={(lat, lng) => setEditData({...editData, lat, lng})} 
+                      />
+                      <MapUpdater center={[editData.lat || 52.2297, editData.lng || 21.0122]} />
+                    </MapContainer>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                    <div className="bg-black/40 p-2 rounded-xl border border-white/5 flex flex-col">
+                      <span className="text-[7px] text-gray-500 font-black uppercase">Lat</span>
+                      <span className="text-[9px] text-gold font-mono">{(editData.lat || 0).toFixed(6)}</span>
+                    </div>
+                    <div className="bg-black/40 p-2 rounded-xl border border-white/5 flex flex-col">
+                      <span className="text-[7px] text-gray-500 font-black uppercase">Lng</span>
+                      <span className="text-[9px] text-gold font-mono">{(editData.lng || 0).toFixed(6)}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
