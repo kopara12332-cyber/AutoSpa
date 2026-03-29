@@ -634,6 +634,75 @@ function AuthUI() {
   );
 }
 
+function Onboarding({ onComplete }: { onCancel?: () => void, onComplete: () => void }) {
+  const [step, setStep] = useState(0);
+  
+  const steps = [
+    {
+      title: "Witaj w AutoSpa",
+      desc: "Twoja luksusowa mapa najlepszych myjni i punktów detailingu w Polsce.",
+      icon: <Sparkles className="w-12 h-12 text-gold" />,
+      features: ["Intuicyjna mapa", "Statusy na żywo", "Najlepsze oceny"]
+    },
+    {
+      title: "Kolejki na żywo",
+      desc: "Sprawdzaj czas oczekiwania zgłoszony przez innych kierowców w czasie rzeczywistym.",
+      icon: <Clock className="w-12 h-12 text-gold" />,
+      features: ["Weryfikacja GPS", "Aktualność 30 min", "System społecznościowy"]
+    },
+    {
+      title: "Panel Właściciela",
+      desc: "Zarządzaj swoim punktem, edytuj ofertę i analizuj statystyki zasięgu.",
+      icon: <Store className="w-12 h-12 text-gold" />,
+      features: ["Edycja danych", "Analityka kliknięć", "Wyróżnienia Premium"]
+    }
+  ];
+
+  return (
+    <div className="fixed inset-0 z-[5000] bg-black flex flex-col items-center justify-center p-6 text-center overflow-hidden">
+      <div className="absolute inset-0 bg-gold-gradient opacity-10" />
+      
+      <div className="relative z-10 w-full max-w-sm space-y-12">
+        <div className="animate-in fade-in zoom-in duration-700 flex flex-col items-center">
+          <div className="bg-zinc-900 p-6 rounded-[2.5rem] border border-gold/30 shadow-2xl shadow-gold/10 mb-8 transform rotate-3">
+            {steps[step].icon}
+          </div>
+          <h2 className="text-4xl font-black text-white italic uppercase tracking-tighter mb-4 leading-none">
+            {steps[step].title.split(' ')[0]} <span className="text-gold">{steps[step].title.split(' ')[1]}</span>
+          </h2>
+          <p className="text-gray-400 text-sm font-medium px-4 leading-relaxed">
+            {steps[step].desc}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-3 px-4">
+          {steps[step].features.map((f, i) => (
+            <div key={i} className="flex items-center gap-3 bg-zinc-900/50 p-3 rounded-2xl border border-white/5 animate-in slide-in-from-left duration-500" style={{ animationDelay: `${i * 100}ms` }}>
+              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-gray-300">{f}</span>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex flex-col gap-4 px-4 pt-8">
+          <button 
+            onClick={() => step < steps.length - 1 ? setStep(s => s + 1) : onComplete()}
+            className="w-full py-5 bg-luxury-gold text-black font-black uppercase italic rounded-2xl shadow-2xl shadow-gold/20 active:scale-95 transition-all"
+          >
+            {step < steps.length - 1 ? 'Dalej' : 'Zaczynamy!'}
+          </button>
+          
+          <div className="flex justify-center gap-2">
+            {steps.map((_, i) => (
+              <div key={i} className={cn("h-1 rounded-full transition-all duration-500", i === step ? "w-8 bg-gold" : "w-2 bg-zinc-800")} />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function AdminLoginModal({ onLogin, onCancel }: { onLogin: () => void, onCancel: () => void }) {
   const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
@@ -1136,6 +1205,7 @@ function App() {
   const [editingWash, setEditingWash] = useState<any | null>(null);
   const [viewingAnalytics, setViewingAnalytics] = useState<CarWash | null>(null);
   const [carWashes, setCarWashes] = useState<CarWash[]>(mockCarWashes);
+  const [showOnboarding, setShowOnboarding] = useState(() => !localStorage.getItem('autospa_onboarding_complete'));
   const [likedWashes, setLikedWashes] = useState<string[]>([]);
   const [animatingLike, setAnimatingLike] = useState<string | null>(null);
   const [pendingWashes, setPendingWashes] = useState<any[]>([]);
@@ -1473,8 +1543,14 @@ function App() {
     setActiveView('detail');
   };
 
+  const handleOnboardingComplete = () => {
+    localStorage.setItem('autospa_onboarding_complete', 'true');
+    setShowOnboarding(false);
+  };
+
   return (
     <div className="flex flex-col h-screen max-w-lg mx-auto bg-black text-white font-sans shadow-xl relative overflow-hidden">
+      {showOnboarding && <Onboarding onComplete={handleOnboardingComplete} />}
       {showAdminLogin && (
         <AdminLoginModal 
           onLogin={() => { setIsAdmin(true); setShowAdminLogin(false); setActiveView('b2b'); }} 
