@@ -39,7 +39,7 @@ const createCustomIcon = (type: CarWashType, isPromoted: boolean) => {
   return L.divIcon({
     className: 'custom-div-icon',
     html: `
-      <div class="marker-pin ${type} ${isPromoted ? 'promoted' : ''} ${type === 'autodetailing' && isPromoted ? 'premium-fx' : ''}">
+      <div class="marker-pin ${type} ${isPromoted ? 'promoted' : ''}">
         <div class="marker-icon-inner">
           ${getIcon()}
         </div>
@@ -1910,13 +1910,19 @@ function CarWashCard({ wash, onClick, userLocation }: { wash: CarWash, onClick: 
     switch (type) {
       case 'bezdotykowa':
         return {
-          container: "bg-luxury-gold rounded-[50%_50%_50%_0] -rotate-45 border-2 border-black shadow-lg",
+          container: cn(
+            "bg-luxury-gold rounded-[50%_50%_50%_0] border-2 border-black",
+            wash.isPromoted ? "animate-premium-bezdotykowa border-white" : "-rotate-45 shadow-lg"
+          ),
           icon: "rotate-45 text-black",
           Component: Car
         };
       case 'reczna':
         return {
-          container: "bg-black rounded-sm rotate-45 border-[3px] border-luxury-gold shadow-[0_0_10px_rgba(212,175,55,0.4)]",
+          container: cn(
+            "bg-black rounded-sm border-[3px] border-luxury-gold",
+            wash.isPromoted ? "animate-premium-reczna border-white shadow-[0_0_15px_#fff]" : "rotate-45 shadow-[0_0_10px_rgba(212,175,55,0.4)]"
+          ),
           icon: "-rotate-45 text-gold",
           Component: Hand
         };
@@ -1925,7 +1931,7 @@ function CarWashCard({ wash, onClick, userLocation }: { wash: CarWash, onClick: 
           container: cn(
             "bg-luxury-gold rounded-[30%_70%_30%_70%/70%_30%_70%_30%] border-2 transition-all",
             wash.isPromoted 
-              ? "border-white animate-[premium-pulse_2s_infinite_ease-in-out] shadow-[0_0_20px_rgba(212,175,55,0.6),0_0_10px_#fff]" 
+              ? "border-white animate-premium-autodetailing shadow-[0_0_20px_rgba(212,175,55,0.6),0_0_10px_#fff]" 
               : "border-black shadow-lg"
           ),
           icon: "text-black",
