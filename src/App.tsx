@@ -1434,6 +1434,33 @@ function NavButton({ active, onClick, icon, label }: { active: boolean, onClick:
 }
 
 function CarWashCard({ wash, onClick }: { wash: CarWash, onClick: () => void }) {
+  const getIconStyles = (type: CarWashType) => {
+    switch (type) {
+      case 'bezdotykowa':
+        return {
+          container: "bg-luxury-gold rounded-[50%_50%_50%_0] -rotate-45 border-2 border-black shadow-lg",
+          icon: "rotate-45 text-black"
+        };
+      case 'reczna':
+        return {
+          container: "bg-black rounded-sm rotate-45 border-[3px] border-luxury-gold shadow-[0_0_10px_rgba(212,175,55,0.4)]",
+          icon: "-rotate-45 text-gold"
+        };
+      case 'autodetailing':
+        return {
+          container: "bg-luxury-gold rounded-[30%_70%_30%_70%/70%_30%_70%_30%] border-2 border-white animate-[premium-pulse_2s_infinite_ease-in-out] shadow-[0_0_20px_rgba(212,175,55,0.6),0_0_10px_#fff]",
+          icon: "text-black"
+        };
+      default:
+        return {
+          container: "bg-zinc-800 rounded-2xl",
+          icon: "text-white"
+        };
+    }
+  };
+
+  const styles = getIconStyles(wash.type);
+
   return (
     <div 
       onClick={onClick}
@@ -1442,11 +1469,13 @@ function CarWashCard({ wash, onClick }: { wash: CarWash, onClick: () => void }) 
         wash.isPromoted && "border-gold/50 bg-gold/5"
       )}
     >
-      <div className={cn(
-        "w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm transform rotate-2",
-        wash.isPromoted ? "bg-luxury-gold text-black" : "bg-black text-gold border border-gold/30"
-      )}>
-        <Car className="w-7 h-7" />
+      <div className="w-16 h-16 flex items-center justify-center flex-shrink-0">
+        <div className={cn(
+          "w-12 h-12 flex items-center justify-center transition-all",
+          styles.container
+        )}>
+          <Car className={cn("w-6 h-6", styles.icon)} />
+        </div>
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex justify-between items-start">
