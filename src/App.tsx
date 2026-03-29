@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Map as MapIcon, List, Search, Filter, Car, Star, Navigation, AlertCircle, TrendingDown, Store, LogIn, Mail, Lock, LogOut, Plus, CheckCircle2, MapPin, Info, ShieldCheck, XCircle, Edit3, Save, CreditCard, Clock, FileText, Settings, Phone, Eye, EyeOff, Camera, Image as ImageIcon, Trash2, Hand, Sparkles } from 'lucide-react';
+import { Map as MapIcon, List, Search, Filter, Car, Star, Navigation, AlertCircle, TrendingDown, Store, LogIn, Mail, Lock, LogOut, Plus, CheckCircle2, MapPin, Info, ShieldCheck, XCircle, Edit3, Save, CreditCard, Clock, FileText, Settings, Phone, Eye, EyeOff, Camera, Image as ImageIcon, Trash2, Hand, Sparkles, LocateFixed, Loader2 } from 'lucide-react';
 import { mockCarWashes } from './data';
 import type { CarWash, CarWashType } from './data';
 import { clsx, type ClassValue } from 'clsx';
@@ -977,6 +977,49 @@ function App() {
   const [logoClicks, setLogoClicks] = useState(0);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
+
+  const findNearestWash = (type: CarWashType) => {
+    setIsLocating(true);
+    
+    if (!navigator.geolocation) {
+      alert("Twoja przeglądarka nie obsługuje geolokalizacji.");
+      setIsLocating(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        
+        const washesOfType = carWashes.filter(w => w.type === type);
+        
+        if (washesOfType.length === 0) {
+          alert(`Brak punktów typu ${type} w bazie.`);
+          setIsLocating(false);
+          return;
+        }
+
+        // Proste obliczenie dystansu (Euklidesowe wystarczy dla małych odległości)
+        const nearest = washesOfType.reduce((prev, curr) => {
+          const distPrev = Math.sqrt(Math.pow(prev.lat - latitude, 2) + Math.pow(prev.lng - longitude, 2));
+          const distCurr = Math.sqrt(Math.pow(curr.lat - latitude, 2) + Math.pow(curr.lng - longitude, 2));
+          return distPrev < distCurr ? prev : curr;
+        });
+
+        setSelectedWash(nearest);
+        setMapCenter([nearest.lat, nearest.lng]);
+        setActiveView('detail');
+        setIsLocating(false);
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        alert("Nie udało się pobrać Twojej lokalizacji. Upewnij się, że masz włączony GPS.");
+        setIsLocating(false);
+      },
+      { enableHighAccuracy: true }
+    );
+  };
 
   useEffect(() => {
     // Sprawdź aktualną sesję
@@ -1076,11 +1119,36 @@ function App() {
         </div>
         
         {activeView !== 'b2b' && activeView !== 'detail' && (
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide no-scrollbar px-2">
-            <FilterChip active={selectedType === 'all'} onClick={() => setSelectedType('all')} label="Wszystkie" />
-            <FilterChip active={selectedType === 'bezdotykowa'} onClick={() => setSelectedType('bezdotykowa')} label="Bezdotykowa" />
-            <FilterChip active={selectedType === 'reczna'} onClick={() => setSelectedType('reczna')} label="Ręczna" />
-            <FilterChip active={selectedType === 'autodetailing'} onClick={() => setSelectedType('autodetailing')} label="Autodetailing" />
+          <div className="flex flex-col gap-3 px-2">
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide no-scrollbar">
+              <FilterChip active={selectedType === 'all'} onClick={() => setSelectedType('all')} label="Wszystkie" />
+              <FilterChip active={selectedType === 'bezdotykowa'} onClick={() => setSelectedType('bezdotykowa')} label="Bezdotykowa" />
+              <FilterChip active={selectedType === 'reczna'} onClick={() => setSelectedType('reczna')} label="Ręczna" />
+              <FilterChip active={selectedType === 'autodetailing'} onClick={() => setSelectedType('autodetailing')} label="Autodetailing" />
+            </div>
+            
+            <div className="bg-zinc-900/50 p-3 rounded-2xl border border-gold/20 flex flex-col gap-2 shadow-inner">
+              <div className="flex items-center gap-2 mb-1">
+                <LocateFixed className="w-3 h-3 text-gold" />
+                <span className="text-[9px] font-black text-gold uppercase tracking-[0.2em]">Znajdź najbliższe:</span>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {(['bezdotykowa', 'reczna', 'autodetailing'] as CarWashType[]).map(t => (
+                  <button
+                    key={t}
+                    disabled={isLocating}
+                    onClick={() => findNearestWash(t)}
+                    className="py-2 bg-black border border-zinc-800 rounded-xl text-[8px] font-black uppercase text-gray-400 hover:border-gold hover:text-gold transition-all flex items-center justify-center gap-1 active:scale-95 disabled:opacity-50"
+                  >
+                    {isLocating ? <Loader2 className="w-3 h-3 animate-spin" /> : (
+                      <>
+                        {t === 'bezdotykowa' ? 'Bezdotyk.' : t === 'reczna' ? 'Ręczna' : 'Detailing'}
+                      </>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         )}
       </header>
