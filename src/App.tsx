@@ -608,181 +608,171 @@ function AdminPanel({ submissions, onAccept, onReject, onUpdate, onBack }: { sub
   };
 
   return (
-    <div className="space-y-6 py-4 animate-in fade-in duration-500">
-      <div className="flex items-center justify-between border-b border-gold/20 pb-4">
+    <div className="space-y-6 py-4 animate-in fade-in duration-500 h-full flex flex-col">
+      <div className="flex items-center justify-between border-b border-gold/20 pb-4 shrink-0">
         <h2 className="text-2xl font-black text-gold uppercase italic tracking-tighter">
-          {editingId ? 'Edycja' : 'Zarządzanie'}
+          {editingId ? 'Edycja Punktu' : 'Zarządzanie'}
         </h2>
-        <button onClick={onBack} className="p-2 bg-zinc-900 rounded-xl text-gray-500"><XCircle className="w-6 h-6" /></button>
+        <button onClick={onBack} className="p-2 bg-zinc-900 rounded-xl text-gray-500 hover:text-white transition-colors"><XCircle className="w-6 h-6" /></button>
       </div>
 
-      <div className="space-y-4">
+      <div className="flex-1 overflow-y-auto no-scrollbar pb-20">
         {editingId && editData ? (
-          <form onSubmit={handleSaveEdit} className="bg-zinc-900 border-2 border-gold/30 p-6 rounded-3xl space-y-6 animate-in slide-in-from-right-4 duration-300">
-            <div className="space-y-4 h-[60vh] overflow-y-auto pr-2 no-scrollbar">
-              <div className="space-y-1">
-                <label className="text-[10px] font-black text-gold uppercase tracking-widest">Nazwa Myjni</label>
-                <input 
-                  className="w-full bg-black border border-zinc-800 rounded-xl py-3 px-4 text-white focus:border-gold outline-none"
-                  value={editData.name}
-                  onChange={e => setEditData({...editData, name: e.target.value})}
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-black text-gold uppercase tracking-widest">Adres</label>
-                <input 
-                  className="w-full bg-black border border-zinc-800 rounded-xl py-3 px-4 text-white focus:border-gold outline-none"
-                  value={editData.address}
-                  onChange={e => setEditData({...editData, address: e.target.value})}
-                />
+          <form onSubmit={handleSaveEdit} className="bg-zinc-900/50 border-2 border-gold/30 p-6 rounded-[2.5rem] space-y-8 animate-in slide-in-from-bottom-4 duration-300">
+            <div className="space-y-6">
+              {/* Sekcja: Podstawowe info */}
+              <div className="space-y-4">
+                <h3 className="text-[10px] font-black text-gold uppercase tracking-[0.2em] flex items-center gap-2 opacity-70">
+                  <Info className="w-3 h-3" /> Dane podstawowe
+                </h3>
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-1">Nazwa</label>
+                  <input 
+                    className="w-full bg-black border-2 border-zinc-800 rounded-2xl py-3 px-4 text-white focus:border-gold outline-none transition-all"
+                    value={editData.name}
+                    onChange={e => setEditData({...editData, name: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-1">Adres</label>
+                  <input 
+                    className="w-full bg-black border-2 border-zinc-800 rounded-2xl py-3 px-4 text-white focus:border-gold outline-none transition-all"
+                    value={editData.address}
+                    onChange={e => setEditData({...editData, address: e.target.value})}
+                  />
+                </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-[10px] font-black text-gold uppercase tracking-widest">Telefon i Widoczność</label>
+              {/* Sekcja: Kontakt */}
+              <div className="space-y-4 pt-4 border-t border-white/5">
+                <h3 className="text-[10px] font-black text-gold uppercase tracking-[0.2em] flex items-center gap-2 opacity-70">
+                  <Phone className="w-3 h-3" /> Kontakt i Prywatność
+                </h3>
                 <div className="flex gap-2">
-                  <input 
-                    className="flex-1 bg-black border border-zinc-800 rounded-xl py-3 px-4 text-white focus:border-gold outline-none"
-                    value={editData.phone || ''}
-                    placeholder="+48 000 000 000"
-                    onChange={e => setEditData({...editData, phone: e.target.value})}
-                  />
+                  <div className="flex-1">
+                    <input 
+                      className="w-full bg-black border-2 border-zinc-800 rounded-2xl py-3 px-4 text-white focus:border-gold outline-none transition-all"
+                      value={editData.phone || ''}
+                      placeholder="Numer telefonu"
+                      onChange={e => setEditData({...editData, phone: e.target.value})}
+                    />
+                  </div>
                   <button
                     type="button"
                     onClick={() => setEditData({...editData, isPhoneVisible: !editData.isPhoneVisible})}
                     className={cn(
-                      "px-3 py-1 rounded-xl border transition-all text-[8px] font-black uppercase",
-                      editData.isPhoneVisible ? "bg-gold text-black border-gold" : "bg-black text-gray-500 border-zinc-800"
+                      "px-4 rounded-2xl border-2 transition-all flex items-center gap-2 text-[8px] font-black uppercase",
+                      editData.isPhoneVisible ? "bg-gold border-gold text-black" : "bg-zinc-900 border-zinc-800 text-gray-500"
                     )}
                   >
+                    {editData.isPhoneVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                     {editData.isPhoneVisible ? 'Widoczny' : 'Ukryty'}
                   </button>
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-[10px] font-black text-gold uppercase tracking-widest">Godziny i Dni</label>
-                <div className="flex items-center justify-between mb-4 bg-black/40 p-3 rounded-2xl border border-white/5">
+              {/* Sekcja: Godziny */}
+              <div className="space-y-4 pt-4 border-t border-white/5">
+                <h3 className="text-[10px] font-black text-gold uppercase tracking-[0.2em] flex items-center gap-2 opacity-70">
+                  <Clock className="w-3 h-3" /> Harmonogram pracy
+                </h3>
+                <div className="flex items-center justify-between bg-black/40 p-3 rounded-2xl border border-white/5">
                   <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Całodobowo (24/7)</span>
                   <button
                     type="button"
-                    onClick={() => setEditData((prev: any) => ({ ...prev, openingHours: { ...(prev.openingHours || { days: [], open: '08:00', close: '20:00' }), is24h: !prev.openingHours?.is24h } }))}
+                    onClick={() => setEditData((prev: any) => ({ ...prev, openingHours: { ...(prev.openingHours || { weekday: { open: '08:00', close: '20:00', closed: false }, saturday: { open: '08:00', close: '18:00', closed: false }, sunday: { open: '10:00', close: '16:00', closed: true } }), is24h: !prev.openingHours?.is24h } }))}
                     className={cn(
-                      "w-10 h-5 rounded-full transition-all relative border-2",
+                      "w-12 h-6 rounded-full transition-all relative border-2",
                       editData.openingHours?.is24h ? "bg-gold border-gold" : "bg-zinc-800 border-zinc-700"
                     )}
                   >
                     <div className={cn(
-                      "absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full transition-all shadow-sm",
+                      "absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full transition-all",
                       editData.openingHours?.is24h ? "right-1" : "left-1"
                     )} />
                   </button>
                 </div>
 
                 {!editData.openingHours?.is24h && (
-                  <div className="space-y-4">
-                    {/* Pon-Pt */}
-                    <div className="p-3 bg-black/40 rounded-2xl border border-white/5 space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Pon-Pt</span>
-                        <button
-                          type="button"
-                          onClick={() => setEditData({ ...editData, openingHours: { ...editData.openingHours, weekday: { ...editData.openingHours.weekday, closed: !editData.openingHours.weekday?.closed } } })}
-                          className={cn("text-[7px] font-black uppercase px-1.5 py-0.5 rounded border", editData.openingHours?.weekday?.closed ? "border-rose-500 text-rose-500" : "border-emerald-500 text-emerald-500")}
-                        >
-                          {editData.openingHours?.weekday?.closed ? 'Zamknięte' : 'Otwarte'}
-                        </button>
-                      </div>
-                      {!editData.openingHours?.weekday?.closed && (
-                        <div className="grid grid-cols-2 gap-2">
-                          <input type="time" className="bg-black border border-zinc-800 rounded-lg py-1 px-2 text-white text-[10px]" value={editData.openingHours?.weekday?.open || '08:00'} onChange={e => setEditData({ ...editData, openingHours: { ...editData.openingHours, weekday: { ...editData.openingHours.weekday, open: e.target.value } } })} />
-                          <input type="time" className="bg-black border border-zinc-800 rounded-lg py-1 px-2 text-white text-[10px]" value={editData.openingHours?.weekday?.close || '20:00'} onChange={e => setEditData({ ...editData, openingHours: { ...editData.openingHours, weekday: { ...editData.openingHours.weekday, close: e.target.value } } })} />
+                  <div className="space-y-3">
+                    {[
+                      { id: 'weekday', label: 'Pon-Pt' },
+                      { id: 'saturday', label: 'Sobota' },
+                      { id: 'sunday', label: 'Niedziela' }
+                    ].map(day => (
+                      <div key={day.id} className="p-3 bg-black/40 rounded-2xl border border-white/5 space-y-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{day.label}</span>
+                          <button
+                            type="button"
+                            onClick={() => setEditData({ ...editData, openingHours: { ...editData.openingHours, [day.id]: { ...(editData.openingHours[day.id] || {}), closed: !editData.openingHours[day.id]?.closed } } })}
+                            className={cn("text-[7px] font-black uppercase px-2 py-1 rounded-lg border", editData.openingHours?.[day.id]?.closed ? "border-rose-500 text-rose-500 bg-rose-500/10" : "border-emerald-500 text-emerald-500 bg-emerald-500/10")}
+                          >
+                            {editData.openingHours?.[day.id]?.closed ? 'Zamknięte' : 'Otwarte'}
+                          </button>
                         </div>
-                      )}
-                    </div>
-
-                    {/* Sobota */}
-                    <div className="p-3 bg-black/40 rounded-2xl border border-white/5 space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Sobota</span>
-                        <button
-                          type="button"
-                          onClick={() => setEditData({ ...editData, openingHours: { ...editData.openingHours, saturday: { ...editData.openingHours.saturday, closed: !editData.openingHours.saturday?.closed } } })}
-                          className={cn("text-[7px] font-black uppercase px-1.5 py-0.5 rounded border", editData.openingHours?.saturday?.closed ? "border-rose-500 text-rose-500" : "border-emerald-500 text-emerald-500")}
-                        >
-                          {editData.openingHours?.saturday?.closed ? 'Zamknięte' : 'Otwarte'}
-                        </button>
+                        {!editData.openingHours?.[day.id]?.closed && (
+                          <div className="grid grid-cols-2 gap-3">
+                            <input type="time" className="bg-black border-2 border-zinc-800 rounded-xl py-2 px-3 text-white text-xs outline-none focus:border-gold" value={editData.openingHours?.[day.id]?.open || '08:00'} onChange={e => setEditData({ ...editData, openingHours: { ...editData.openingHours, [day.id]: { ...editData.openingHours[day.id], open: e.target.value } } })} />
+                            <input type="time" className="bg-black border-2 border-zinc-800 rounded-xl py-2 px-3 text-white text-xs outline-none focus:border-gold" value={editData.openingHours?.[day.id]?.close || '20:00'} onChange={e => setEditData({ ...editData, openingHours: { ...editData.openingHours, [day.id]: { ...editData.openingHours[day.id], close: e.target.value } } })} />
+                          </div>
+                        )}
                       </div>
-                      {!editData.openingHours?.saturday?.closed && (
-                        <div className="grid grid-cols-2 gap-2">
-                          <input type="time" className="bg-black border border-zinc-800 rounded-lg py-1 px-2 text-white text-[10px]" value={editData.openingHours?.saturday?.open || '08:00'} onChange={e => setEditData({ ...editData, openingHours: { ...editData.openingHours, saturday: { ...editData.openingHours.saturday, open: e.target.value } } })} />
-                          <input type="time" className="bg-black border border-zinc-800 rounded-lg py-1 px-2 text-white text-[10px]" value={editData.openingHours?.saturday?.close || '18:00'} onChange={e => setEditData({ ...editData, openingHours: { ...editData.openingHours, saturday: { ...editData.openingHours.saturday, close: e.target.value } } })} />
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Niedziela */}
-                    <div className="p-3 bg-black/40 rounded-2xl border border-white/5 space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Niedziela</span>
-                        <button
-                          type="button"
-                          onClick={() => setEditData({ ...editData, openingHours: { ...editData.openingHours, sunday: { ...editData.openingHours.sunday, closed: !editData.openingHours.sunday?.closed } } })}
-                          className={cn("text-[7px] font-black uppercase px-1.5 py-0.5 rounded border", editData.openingHours?.sunday?.closed ? "border-rose-500 text-rose-500" : "border-emerald-500 text-emerald-500")}
-                        >
-                          {editData.openingHours?.sunday?.closed ? 'Zamknięte' : 'Otwarte'}
-                        </button>
-                      </div>
-                      {!editData.openingHours?.sunday?.closed && (
-                        <div className="grid grid-cols-2 gap-2">
-                          <input type="time" className="bg-black border border-zinc-800 rounded-lg py-1 px-2 text-white text-[10px]" value={editData.openingHours?.sunday?.open || '10:00'} onChange={e => setEditData({ ...editData, openingHours: { ...editData.openingHours, sunday: { ...editData.openingHours.sunday, open: e.target.value } } })} />
-                          <input type="time" className="bg-black border border-zinc-800 rounded-lg py-1 px-2 text-white text-[10px]" value={editData.openingHours?.sunday?.close || '16:00'} onChange={e => setEditData({ ...editData, openingHours: { ...editData.openingHours, sunday: { ...editData.openingHours.sunday, close: e.target.value } } })} />
-                        </div>
-                      )}
-                    </div>
+                    ))}
                   </div>
                 )}
               </div>
 
-              <div className="space-y-1">
-                <label className="text-[10px] font-black text-gold uppercase tracking-widest">Płatność</label>
-                <div className="flex flex-wrap gap-2">
-                  {GLOBAL_SPECS.payment.map(p => (
-                    <button
-                      key={p}
-                      type="button"
-                      onClick={() => toggleItem('payment', p)}
-                      className={cn(
-                        "px-3 py-1.5 rounded-full text-[8px] font-black uppercase border transition-all",
-                        editData.payment?.includes(p) ? "bg-gold text-black border-gold" : "bg-black text-gray-500 border-zinc-800"
-                      )}
-                    >
-                      {p}
-                    </button>
-                  ))}
+              {/* Sekcja: Płatności i Wyposażenie */}
+              <div className="grid grid-cols-1 gap-6 pt-4 border-t border-white/5">
+                <div className="space-y-3">
+                  <h3 className="text-[10px] font-black text-gold uppercase tracking-[0.2em] flex items-center gap-2 opacity-70">
+                    <CreditCard className="w-3 h-3" /> Płatności
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {GLOBAL_SPECS.payment.map(p => (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => toggleItem('payment', p)}
+                        className={cn(
+                          "px-3 py-1.5 rounded-xl text-[8px] font-black uppercase border-2 transition-all",
+                          editData.payment?.includes(p) ? "bg-gold border-gold text-black" : "bg-black text-gray-500 border-zinc-800"
+                        )}
+                      >
+                        {p}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <h3 className="text-[10px] font-black text-gold uppercase tracking-[0.2em] flex items-center gap-2 opacity-70">
+                    <Settings className="w-3 h-3" /> Wyposażenie
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {GLOBAL_SPECS.equipment.map(e => (
+                      <button
+                        key={e}
+                        type="button"
+                        onClick={() => toggleItem('equipment', e)}
+                        className={cn(
+                          "px-3 py-1.5 rounded-xl text-[8px] font-black uppercase border-2 transition-all",
+                          editData.equipment?.includes(e) ? "bg-gold border-gold text-black" : "bg-black text-gray-500 border-zinc-800"
+                        )}
+                      >
+                        {e}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-[10px] font-black text-gold uppercase tracking-widest">Wyposażenie</label>
-                <div className="flex flex-wrap gap-2">
-                  {GLOBAL_SPECS.equipment.map(e => (
-                    <button
-                      key={e}
-                      type="button"
-                      onClick={() => toggleItem('equipment', e)}
-                      className={cn(
-                        "px-3 py-1.5 rounded-full text-[8px] font-black uppercase border transition-all",
-                        editData.equipment?.includes(e) ? "bg-gold text-black border-gold" : "bg-black text-gray-500 border-zinc-800"
-                      )}
-                    >
-                      {e}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[10px] font-black text-gold uppercase tracking-widest">Usługi {editData.type}</label>
+              {/* Sekcja: Usługi */}
+              <div className="space-y-3 pt-4 border-t border-white/5">
+                <h3 className="text-[10px] font-black text-gold uppercase tracking-[0.2em] flex items-center gap-2 opacity-70">
+                  <Plus className="w-3 h-3" /> Usługi {editData.type}
+                </h3>
                 <div className="flex flex-wrap gap-2">
                   {WASH_SPECS[editData.type as CarWashType].map((service: string) => (
                     <button
@@ -790,8 +780,8 @@ function AdminPanel({ submissions, onAccept, onReject, onUpdate, onBack }: { sub
                       type="button"
                       onClick={() => toggleItem('services', service)}
                       className={cn(
-                        "px-3 py-1.5 rounded-full font-bold text-[8px] uppercase transition-all border",
-                        editData.services.includes(service) ? "bg-gold text-black border-gold" : "bg-black text-gray-500 border-zinc-800"
+                        "px-3 py-1.5 rounded-xl font-bold text-[8px] uppercase transition-all border-2",
+                        editData.services.includes(service) ? "bg-gold border-gold text-black" : "bg-black text-gray-500 border-zinc-800"
                       )}
                     >
                       {service}
@@ -800,20 +790,25 @@ function AdminPanel({ submissions, onAccept, onReject, onUpdate, onBack }: { sub
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-[10px] font-black text-gold uppercase tracking-widest">Opis</label>
+              {/* Sekcja: Opis */}
+              <div className="space-y-3 pt-4 border-t border-white/5">
+                <h3 className="text-[10px] font-black text-gold uppercase tracking-[0.2em] flex items-center gap-2 opacity-70">
+                  <FileText className="w-3 h-3" /> Opis dodatkowy
+                </h3>
                 <textarea 
-                  className="w-full bg-black border border-zinc-800 rounded-xl py-3 px-4 text-white focus:border-gold outline-none text-xs min-h-[80px]"
+                  className="w-full bg-black border-2 border-zinc-800 rounded-2xl py-4 px-4 text-white focus:border-gold outline-none text-xs min-h-[120px] resize-none"
                   value={editData.description}
                   onChange={e => setEditData({...editData, description: e.target.value})}
                 />
               </div>
             </div>
-            <div className="flex gap-3">
-              <button type="submit" className="flex-1 py-3 bg-gold text-black font-black uppercase italic rounded-xl flex items-center justify-center gap-2">
-                <Save className="w-4 h-4" /> Zapisz
+
+            {/* Przyciski akcji (Fixed na dole formsa) */}
+            <div className="flex gap-3 pt-6">
+              <button type="submit" className="flex-1 py-4 bg-luxury-gold text-black font-black uppercase italic rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-gold/20 hover:scale-[1.02] active:scale-95 transition-all">
+                <Save className="w-5 h-5" /> Zapisz zmiany
               </button>
-              <button type="button" onClick={() => setEditingId(null)} className="flex-1 py-3 bg-zinc-800 text-white font-black uppercase italic rounded-xl">
+              <button type="button" onClick={() => { setEditingId(null); setEditData(null); }} className="flex-1 py-4 bg-zinc-800 text-white font-black uppercase italic rounded-2xl hover:bg-zinc-700 transition-all">
                 Anuluj
               </button>
             </div>
@@ -1132,13 +1127,27 @@ function App() {
                   </div>
                 )}
 
-                {(selectedWash.equipment?.length || selectedWash.services?.length) && (
+                {selectedWash.equipment && selectedWash.equipment.length > 0 && (
                   <div className="flex items-start gap-3">
                     <Settings className="w-5 h-5 text-gold flex-shrink-0" />
                     <div>
-                      <h4 className="text-[10px] font-black text-gold uppercase tracking-widest">Wyposażenie i Usługi</h4>
+                      <h4 className="text-[10px] font-black text-gold uppercase tracking-widest">Wyposażenie</h4>
                       <div className="flex flex-wrap gap-1 mt-1">
-                        {[...(selectedWash.equipment || []), ...(selectedWash.services || [])].map(item => (
+                        {selectedWash.equipment.map(item => (
+                          <span key={item} className="text-[10px] bg-zinc-900 border border-white/5 px-2 py-0.5 rounded-lg text-gray-400">{item}</span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {selectedWash.services && selectedWash.services.length > 0 && (
+                  <div className="flex items-start gap-3">
+                    <Plus className="w-5 h-5 text-gold flex-shrink-0" />
+                    <div>
+                      <h4 className="text-[10px] font-black text-gold uppercase tracking-widest">Dostępne Usługi</h4>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {selectedWash.services.map(item => (
                           <span key={item} className="text-[10px] bg-zinc-900 border border-white/5 px-2 py-0.5 rounded-lg text-gray-400">{item}</span>
                         ))}
                       </div>
