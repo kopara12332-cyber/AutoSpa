@@ -101,27 +101,6 @@
   cursor: pointer;
 }
 
-.marker-pin.promoted::after {
-  content: 'HOT';
-  position: absolute;
-  top: -15px;
-  right: -15px;
-  background: #fff;
-  color: #000;
-  font-size: 8px;
-  font-weight: 900;
-  padding: 2px 4px;
-  border-radius: 4px;
-  border: 1px solid #D4AF37;
-  transform: rotate(15deg);
-  animation: bounce 0.5s infinite alternate;
-}
-
-@keyframes bounce {
-  from { transform: rotate(15deg) translateY(0); }
-  to { transform: rotate(15deg) translateY(-3px); }
-}
-
 .marker-pin.promoted {
   background: #FFD700; /* Bright Gold */
   box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
