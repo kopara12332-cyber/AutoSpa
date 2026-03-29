@@ -1968,9 +1968,9 @@ function CarWashCard({ wash, onClick, userLocation }: { wash: CarWash, onClick: 
               <span className="text-[10px] font-black text-gold">{wash.likes}</span>
             </div>
             {userLocation && (
-              <div className="flex items-center gap-1.5 text-gold bg-gold/10 px-2 py-1 rounded-lg border border-gold/20 shadow-sm">
-                <Navigation className="w-3 h-3 rotate-45" />
-                <span className="text-[9px] font-black uppercase tracking-widest">
+              <div className="flex items-center gap-1.5 text-gray-400 bg-white/5 px-2 py-1 rounded-lg border border-white/10 shadow-sm">
+                <Navigation className="w-3.5 h-3.5 rotate-45" />
+                <span className="text-[11px] font-black uppercase tracking-widest">
                   {getDistance(userLocation[0], userLocation[1], wash.lat, wash.lng)}
                 </span>
               </div>
