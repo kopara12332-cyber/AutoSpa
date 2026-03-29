@@ -1934,7 +1934,7 @@ function CarWashCard({ wash, onClick, userLocation }: { wash: CarWash, onClick: 
               ? "border-white animate-premium-autodetailing shadow-[0_0_20px_rgba(212,175,55,0.6),0_0_10px_#fff]" 
               : "border-black shadow-lg"
           ),
-          icon: "text-black",
+          icon: "text-white drop-shadow-[0_0_2px_rgba(0,0,0,0.3)]",
           Component: Sparkles
         };
       default:
