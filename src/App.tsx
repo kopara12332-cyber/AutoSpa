@@ -146,7 +146,7 @@ function AddWashForm({ onCancel, onSuccess, initialData, userEmail }: { onCancel
       Array.from(files).forEach(file => {
         const reader = new FileReader();
         reader.onloadend = () => {
-          setFormData(prev => ({
+          setFormData((prev: any) => ({
             ...prev,
             images: [...prev.images, reader.result as string]
           }));
@@ -157,18 +157,18 @@ function AddWashForm({ onCancel, onSuccess, initialData, userEmail }: { onCancel
   };
 
   const removeImage = (index: number) => {
-    setFormData(prev => ({
+    setFormData((prev: any) => ({
       ...prev,
-      images: prev.images.filter((_, i) => i !== index)
+      images: prev.images.filter((_: any, i: number) => i !== index)
     }));
   };
   const [loading, setLoading] = useState(false);
 
   const toggleItem = (field: 'services' | 'payment' | 'equipment', item: string) => {
-    setFormData(prev => ({
+    setFormData((prev: any) => ({
       ...prev,
       [field]: prev[field].includes(item)
-        ? prev[field].filter(s => s !== item)
+        ? prev[field].filter((s: string) => s !== item)
         : [...prev[field], item]
     }));
   };
@@ -202,7 +202,7 @@ function AddWashForm({ onCancel, onSuccess, initialData, userEmail }: { onCancel
       isQueue: initialData ? initialData.isQueue : false,
       queueStatus: initialData ? initialData.queueStatus : 'brak',
       isMachineWorking: initialData ? initialData.isMachineWorking : true,
-      hasActiveFoam: formData.services.some(s => s.toLowerCase().includes('aktywna piana')),
+      hasActiveFoam: formData.services.some((s: string) => s.toLowerCase().includes('aktywna piana')),
       isPromoted: initialData ? initialData.isPromoted : false,
       status: 'pending' as 'pending' | 'approved',
       isEdit: !!initialData
@@ -308,7 +308,7 @@ function AddWashForm({ onCancel, onSuccess, initialData, userEmail }: { onCancel
               <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Całodobowo (24/7)</span>
               <button
                 type="button"
-                onClick={() => setFormData(prev => ({ ...prev, openingHours: { ...prev.openingHours, is24h: !prev.openingHours.is24h } }))}
+                onClick={() => setFormData((prev: any) => ({ ...prev, openingHours: { ...prev.openingHours, is24h: !prev.openingHours.is24h } }))}
                 className={cn(
                   "w-12 h-6 rounded-full transition-all relative border-2",
                   formData.openingHours.is24h ? "bg-gold border-gold" : "bg-zinc-800 border-zinc-700"
@@ -329,7 +329,7 @@ function AddWashForm({ onCancel, onSuccess, initialData, userEmail }: { onCancel
                     <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Poniedziałek - Piątek</span>
                     <button
                       type="button"
-                      onClick={() => setFormData(prev => ({ ...prev, openingHours: { ...prev.openingHours, weekday: { ...prev.openingHours.weekday!, closed: !prev.openingHours.weekday!.closed } } }))}
+                      onClick={() => setFormData((prev: any) => ({ ...prev, openingHours: { ...prev.openingHours, weekday: { ...prev.openingHours.weekday!, closed: !prev.openingHours.weekday!.closed } } }))}
                       className={cn("text-[8px] font-black uppercase px-2 py-1 rounded-md border", formData.openingHours.weekday?.closed ? "bg-rose-900/20 border-rose-500 text-rose-500" : "bg-emerald-900/20 border-emerald-500 text-emerald-500")}
                     >
                       {formData.openingHours.weekday?.closed ? 'Zamknięte' : 'Otwarte'}
@@ -337,8 +337,8 @@ function AddWashForm({ onCancel, onSuccess, initialData, userEmail }: { onCancel
                   </div>
                   {!formData.openingHours.weekday?.closed && (
                     <div className="grid grid-cols-2 gap-4">
-                      <input type="time" className="bg-black border border-zinc-800 rounded-xl py-2 px-3 text-white text-xs" value={formData.openingHours.weekday?.open} onChange={e => setFormData(prev => ({ ...prev, openingHours: { ...prev.openingHours, weekday: { ...prev.openingHours.weekday!, open: e.target.value } } }))} />
-                      <input type="time" className="bg-black border border-zinc-800 rounded-xl py-2 px-3 text-white text-xs" value={formData.openingHours.weekday?.close} onChange={e => setFormData(prev => ({ ...prev, openingHours: { ...prev.openingHours, weekday: { ...prev.openingHours.weekday!, close: e.target.value } } }))} />
+                      <input type="time" className="bg-black border border-zinc-800 rounded-xl py-2 px-3 text-white text-xs" value={formData.openingHours.weekday?.open} onChange={e => setFormData((prev: any) => ({ ...prev, openingHours: { ...prev.openingHours, weekday: { ...prev.openingHours.weekday!, open: e.target.value } } }))} />
+                      <input type="time" className="bg-black border border-zinc-800 rounded-xl py-2 px-3 text-white text-xs" value={formData.openingHours.weekday?.close} onChange={e => setFormData((prev: any) => ({ ...prev, openingHours: { ...prev.openingHours, weekday: { ...prev.openingHours.weekday!, close: e.target.value } } }))} />
                     </div>
                   )}
                 </div>
@@ -349,7 +349,7 @@ function AddWashForm({ onCancel, onSuccess, initialData, userEmail }: { onCancel
                     <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Sobota</span>
                     <button
                       type="button"
-                      onClick={() => setFormData(prev => ({ ...prev, openingHours: { ...prev.openingHours, saturday: { ...prev.openingHours.saturday!, closed: !prev.openingHours.saturday!.closed } } }))}
+                      onClick={() => setFormData((prev: any) => ({ ...prev, openingHours: { ...prev.openingHours, saturday: { ...prev.openingHours.saturday!, closed: !prev.openingHours.saturday!.closed } } }))}
                       className={cn("text-[8px] font-black uppercase px-2 py-1 rounded-md border", formData.openingHours.saturday?.closed ? "bg-rose-900/20 border-rose-500 text-rose-500" : "bg-emerald-900/20 border-emerald-500 text-emerald-500")}
                     >
                       {formData.openingHours.saturday?.closed ? 'Zamknięte' : 'Otwarte'}
@@ -357,8 +357,8 @@ function AddWashForm({ onCancel, onSuccess, initialData, userEmail }: { onCancel
                   </div>
                   {!formData.openingHours.saturday?.closed && (
                     <div className="grid grid-cols-2 gap-4">
-                      <input type="time" className="bg-black border border-zinc-800 rounded-xl py-2 px-3 text-white text-xs" value={formData.openingHours.saturday?.open} onChange={e => setFormData(prev => ({ ...prev, openingHours: { ...prev.openingHours, saturday: { ...prev.openingHours.saturday!, open: e.target.value } } }))} />
-                      <input type="time" className="bg-black border border-zinc-800 rounded-xl py-2 px-3 text-white text-xs" value={formData.openingHours.saturday?.close} onChange={e => setFormData(prev => ({ ...prev, openingHours: { ...prev.openingHours, saturday: { ...prev.openingHours.saturday!, close: e.target.value } } }))} />
+                      <input type="time" className="bg-black border border-zinc-800 rounded-xl py-2 px-3 text-white text-xs" value={formData.openingHours.saturday?.open} onChange={e => setFormData((prev: any) => ({ ...prev, openingHours: { ...prev.openingHours, saturday: { ...prev.openingHours.saturday!, open: e.target.value } } }))} />
+                      <input type="time" className="bg-black border border-zinc-800 rounded-xl py-2 px-3 text-white text-xs" value={formData.openingHours.saturday?.close} onChange={e => setFormData((prev: any) => ({ ...prev, openingHours: { ...prev.openingHours, saturday: { ...prev.openingHours.saturday!, close: e.target.value } } }))} />
                     </div>
                   )}
                 </div>
@@ -369,7 +369,7 @@ function AddWashForm({ onCancel, onSuccess, initialData, userEmail }: { onCancel
                     <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Niedziela</span>
                     <button
                       type="button"
-                      onClick={() => setFormData(prev => ({ ...prev, openingHours: { ...prev.openingHours, sunday: { ...prev.openingHours.sunday!, closed: !prev.openingHours.sunday!.closed } } }))}
+                      onClick={() => setFormData((prev: any) => ({ ...prev, openingHours: { ...prev.openingHours, sunday: { ...prev.openingHours.sunday!, closed: !prev.openingHours.sunday!.closed } } }))}
                       className={cn("text-[8px] font-black uppercase px-2 py-1 rounded-md border", formData.openingHours.sunday?.closed ? "bg-rose-900/20 border-rose-500 text-rose-500" : "bg-emerald-900/20 border-emerald-500 text-emerald-500")}
                     >
                       {formData.openingHours.sunday?.closed ? 'Zamknięte' : 'Otwarte'}
@@ -377,8 +377,8 @@ function AddWashForm({ onCancel, onSuccess, initialData, userEmail }: { onCancel
                   </div>
                   {!formData.openingHours.sunday?.closed && (
                     <div className="grid grid-cols-2 gap-4">
-                      <input type="time" className="bg-black border border-zinc-800 rounded-xl py-2 px-3 text-white text-xs" value={formData.openingHours.sunday?.open} onChange={e => setFormData(prev => ({ ...prev, openingHours: { ...prev.openingHours, sunday: { ...prev.openingHours.sunday!, open: e.target.value } } }))} />
-                      <input type="time" className="bg-black border border-zinc-800 rounded-xl py-2 px-3 text-white text-xs" value={formData.openingHours.sunday?.close} onChange={e => setFormData(prev => ({ ...prev, openingHours: { ...prev.openingHours, sunday: { ...prev.openingHours.sunday!, close: e.target.value } } }))} />
+                      <input type="time" className="bg-black border border-zinc-800 rounded-xl py-2 px-3 text-white text-xs" value={formData.openingHours.sunday?.open} onChange={e => setFormData((prev: any) => ({ ...prev, openingHours: { ...prev.openingHours, sunday: { ...prev.openingHours.sunday!, open: e.target.value } } }))} />
+                      <input type="time" className="bg-black border border-zinc-800 rounded-xl py-2 px-3 text-white text-xs" value={formData.openingHours.sunday?.close} onChange={e => setFormData((prev: any) => ({ ...prev, openingHours: { ...prev.openingHours, sunday: { ...prev.openingHours.sunday!, close: e.target.value } } }))} />
                     </div>
                   )}
                 </div>
@@ -430,7 +430,7 @@ function AddWashForm({ onCancel, onSuccess, initialData, userEmail }: { onCancel
           <div className="space-y-4 bg-zinc-900/50 p-4 rounded-3xl border border-white/5">
             <h3 className="text-[10px] font-black text-gold uppercase tracking-[0.2em] mb-2 flex items-center gap-2"><Plus className="w-3 h-3" /> Usługi {formData.type}</h3>
             <div className="grid grid-cols-2 gap-2">
-              {WASH_SPECS[formData.type].map(service => (
+              {WASH_SPECS[formData.type as keyof typeof WASH_SPECS].map((service: string) => (
                 <button
                   key={service}
                   type="button"
@@ -451,7 +451,7 @@ function AddWashForm({ onCancel, onSuccess, initialData, userEmail }: { onCancel
           <div className="space-y-4 bg-zinc-900/50 p-4 rounded-3xl border border-white/5">
             <h3 className="text-[10px] font-black text-gold uppercase tracking-[0.2em] mb-2 flex items-center gap-2"><Camera className="w-3 h-3" /> Zdjęcia punktu</h3>
             <div className="grid grid-cols-4 gap-2">
-              {formData.images.map((img, idx) => (
+              {formData.images.map((img: string, idx: number) => (
                 <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-white/10 group">
                   <img src={img} alt={`Preview ${idx}`} className="w-full h-full object-cover" />
                   <button 
