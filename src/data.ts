@@ -18,10 +18,10 @@ export interface CarWash {
   equipment?: string[];
   hours?: string;
   openingHours?: {
-    days: string[];
-    open: string;
-    close: string;
     is24h: boolean;
+    weekday?: { open: string; close: string; closed: boolean };
+    saturday?: { open: string; close: string; closed: boolean };
+    sunday?: { open: string; close: string; closed: boolean };
   };
   phone?: string;
   isPhoneVisible?: boolean;

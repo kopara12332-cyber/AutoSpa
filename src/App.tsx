@@ -67,7 +67,7 @@ function MapUpdater({ center }: { center: [number, number] }) {
 type View = 'map' | 'list' | 'b2b' | 'detail';
 
 const WASH_SPECS = {
-  reczna: [
+  bezdotykowa: [
     'Aktywna piana (Turbo)', 'Mycie wstępne (gorąca woda)', 'Mycie zasadnicze (mikroproszek)',
     'Spłukiwanie (woda sieciowa)', 'Woskowanie nanopolimerem / Hydrowosk', 'Nabłyszczanie (Osmoza)',
     'Mycie podwozia (automat)', 'Oprysk felg / Chemia do felg', 'Szczotka z pianą (miękka)', 
@@ -75,7 +75,7 @@ const WASH_SPECS = {
     'Turbopiana (bardzo gęsta)', 'Program "Stop" (pauza)', 'Stanowisko SUV/Bus/Kamper',
     'Uchwyty na dywaniki (klamry)', 'Oświetlenie nocne LED', 'Zadaszenie stanowisk'
   ],
-  bezdotykowa: [
+  reczna: [
     'Mycie ręczne (na dwa wiadra)', 'Mycie detailingowe (pędzelkowanie)', 'Mycie silnika (góra/dół)',
     'Mycie podwozia (podnośnik)', 'Osuszanie ręczne (mikrofibra)', 'Osuszanie sprężonym powietrzem',
     'Glinkowanie karoserii', 'Dekontaminacja (usuwanie smoły/asfaltu)', 'Deironizacja felg (krwawa felga)',
@@ -129,10 +129,10 @@ function AddWashForm({ onCancel, onSuccess }: { onCancel: () => void, onSuccess:
     payment: [] as string[],
     equipment: [] as string[],
     openingHours: {
-      days: [] as string[],
-      open: '08:00',
-      close: '20:00',
-      is24h: true
+      is24h: true,
+      weekday: { open: '08:00', close: '20:00', closed: false },
+      saturday: { open: '08:00', close: '18:00', closed: false },
+      sunday: { open: '10:00', close: '16:00', closed: true }
     },
     phone: '',
     isPhoneVisible: true,
@@ -153,15 +153,21 @@ function AddWashForm({ onCancel, onSuccess }: { onCancel: () => void, onSuccess:
     e.preventDefault();
     setLoading(true);
 
-    let hoursText = '';
+    let hoursParts: string[] = [];
     if (formData.openingHours.is24h) {
-      hoursText = '24/7 (Całodobowo)';
-    } else if (formData.openingHours.days.length > 0) {
-      const days = formData.openingHours.days.join(', ');
-      hoursText = `${days}: ${formData.openingHours.open}-${formData.openingHours.close}`;
+      hoursParts.push('24/7 (Całodobowo)');
     } else {
-      hoursText = 'Brak danych o godzinach';
+      const { weekday, saturday, sunday } = formData.openingHours;
+      if (weekday && !weekday.closed) hoursParts.push(`Pon-Pt: ${weekday.open}-${weekday.close}`);
+      else if (weekday?.closed) hoursParts.push('Pon-Pt: Zamknięte');
+      
+      if (saturday && !saturday.closed) hoursParts.push(`Sob: ${saturday.open}-${saturday.close}`);
+      else if (saturday?.closed) hoursParts.push('Sob: Zamknięte');
+      
+      if (sunday && !sunday.closed) hoursParts.push(`Ndz: ${sunday.open}-${sunday.close}`);
+      else if (sunday?.closed) hoursParts.push('Ndz: Zamknięte');
     }
+    const hoursText = hoursParts.length > 0 ? hoursParts.join(' | ') : 'Brak danych';
     
     const newSubmission = {
       ...formData,
@@ -289,53 +295,64 @@ function AddWashForm({ onCancel, onSuccess }: { onCancel: () => void, onSuccess:
 
             {!formData.openingHours.is24h && (
               <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
-                <div className="space-y-2">
-                  <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-1">Dni tygodnia</label>
-                  <div className="grid grid-cols-4 gap-2">
-                    {['Pon-Pt', 'Sobota', 'Niedziela', 'Codziennie'].map(day => (
-                      <button
-                        key={day}
-                        type="button"
-                        onClick={() => {
-                          let newDays = [...formData.openingHours.days];
-                          if (day === 'Codziennie') {
-                            newDays = newDays.includes('Codziennie') ? [] : ['Codziennie'];
-                          } else {
-                            newDays = newDays.filter(d => d !== 'Codziennie');
-                            newDays = newDays.includes(day) ? newDays.filter(d => d !== day) : [...newDays, day];
-                          }
-                          setFormData(prev => ({ ...prev, openingHours: { ...prev.openingHours, days: newDays } }));
-                        }}
-                        className={cn(
-                          "py-2 rounded-xl text-[8px] font-black uppercase transition-all border-2",
-                          formData.openingHours.days.includes(day) ? "bg-gold/20 text-white border-gold" : "bg-black text-gray-500 border-zinc-800"
-                        )}
-                      >
-                        {day}
-                      </button>
-                    ))}
+                {/* Pon-Pt */}
+                <div className="p-3 bg-black/40 rounded-2xl border border-white/5 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Poniedziałek - Piątek</span>
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, openingHours: { ...prev.openingHours, weekday: { ...prev.openingHours.weekday!, closed: !prev.openingHours.weekday!.closed } } }))}
+                      className={cn("text-[8px] font-black uppercase px-2 py-1 rounded-md border", formData.openingHours.weekday?.closed ? "bg-rose-900/20 border-rose-500 text-rose-500" : "bg-emerald-900/20 border-emerald-500 text-emerald-500")}
+                    >
+                      {formData.openingHours.weekday?.closed ? 'Zamknięte' : 'Otwarte'}
+                    </button>
                   </div>
+                  {!formData.openingHours.weekday?.closed && (
+                    <div className="grid grid-cols-2 gap-4">
+                      <input type="time" className="bg-black border border-zinc-800 rounded-xl py-2 px-3 text-white text-xs" value={formData.openingHours.weekday?.open} onChange={e => setFormData(prev => ({ ...prev, openingHours: { ...prev.openingHours, weekday: { ...prev.openingHours.weekday!, open: e.target.value } } }))} />
+                      <input type="time" className="bg-black border border-zinc-800 rounded-xl py-2 px-3 text-white text-xs" value={formData.openingHours.weekday?.close} onChange={e => setFormData(prev => ({ ...prev, openingHours: { ...prev.openingHours, weekday: { ...prev.openingHours.weekday!, close: e.target.value } } }))} />
+                    </div>
+                  )}
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-1">Od godziny</label>
-                    <input 
-                      type="time"
-                      className="w-full bg-black border-2 border-zinc-800 rounded-2xl py-3 px-4 text-white focus:border-gold outline-none text-sm"
-                      value={formData.openingHours.open}
-                      onChange={e => setFormData(prev => ({ ...prev, openingHours: { ...prev.openingHours, open: e.target.value } }))}
-                    />
+                {/* Sobota */}
+                <div className="p-3 bg-black/40 rounded-2xl border border-white/5 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Sobota</span>
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, openingHours: { ...prev.openingHours, saturday: { ...prev.openingHours.saturday!, closed: !prev.openingHours.saturday!.closed } } }))}
+                      className={cn("text-[8px] font-black uppercase px-2 py-1 rounded-md border", formData.openingHours.saturday?.closed ? "bg-rose-900/20 border-rose-500 text-rose-500" : "bg-emerald-900/20 border-emerald-500 text-emerald-500")}
+                    >
+                      {formData.openingHours.saturday?.closed ? 'Zamknięte' : 'Otwarte'}
+                    </button>
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-1">Do godziny</label>
-                    <input 
-                      type="time"
-                      className="w-full bg-black border-2 border-zinc-800 rounded-2xl py-3 px-4 text-white focus:border-gold outline-none text-sm"
-                      value={formData.openingHours.close}
-                      onChange={e => setFormData(prev => ({ ...prev, openingHours: { ...prev.openingHours, close: e.target.value } }))}
-                    />
+                  {!formData.openingHours.saturday?.closed && (
+                    <div className="grid grid-cols-2 gap-4">
+                      <input type="time" className="bg-black border border-zinc-800 rounded-xl py-2 px-3 text-white text-xs" value={formData.openingHours.saturday?.open} onChange={e => setFormData(prev => ({ ...prev, openingHours: { ...prev.openingHours, saturday: { ...prev.openingHours.saturday!, open: e.target.value } } }))} />
+                      <input type="time" className="bg-black border border-zinc-800 rounded-xl py-2 px-3 text-white text-xs" value={formData.openingHours.saturday?.close} onChange={e => setFormData(prev => ({ ...prev, openingHours: { ...prev.openingHours, saturday: { ...prev.openingHours.saturday!, close: e.target.value } } }))} />
+                    </div>
+                  )}
+                </div>
+
+                {/* Niedziela */}
+                <div className="p-3 bg-black/40 rounded-2xl border border-white/5 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Niedziela</span>
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, openingHours: { ...prev.openingHours, sunday: { ...prev.openingHours.sunday!, closed: !prev.openingHours.sunday!.closed } } }))}
+                      className={cn("text-[8px] font-black uppercase px-2 py-1 rounded-md border", formData.openingHours.sunday?.closed ? "bg-rose-900/20 border-rose-500 text-rose-500" : "bg-emerald-900/20 border-emerald-500 text-emerald-500")}
+                    >
+                      {formData.openingHours.sunday?.closed ? 'Zamknięte' : 'Otwarte'}
+                    </button>
                   </div>
+                  {!formData.openingHours.sunday?.closed && (
+                    <div className="grid grid-cols-2 gap-4">
+                      <input type="time" className="bg-black border border-zinc-800 rounded-xl py-2 px-3 text-white text-xs" value={formData.openingHours.sunday?.open} onChange={e => setFormData(prev => ({ ...prev, openingHours: { ...prev.openingHours, sunday: { ...prev.openingHours.sunday!, open: e.target.value } } }))} />
+                      <input type="time" className="bg-black border border-zinc-800 rounded-xl py-2 px-3 text-white text-xs" value={formData.openingHours.sunday?.close} onChange={e => setFormData(prev => ({ ...prev, openingHours: { ...prev.openingHours, sunday: { ...prev.openingHours.sunday!, close: e.target.value } } }))} />
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -663,44 +680,64 @@ function AdminPanel({ submissions, onAccept, onReject, onUpdate, onBack }: { sub
 
                 {!editData.openingHours?.is24h && (
                   <div className="space-y-4">
-                    <div className="grid grid-cols-4 gap-2">
-                      {['Pon-Pt', 'Sobota', 'Niedziela', 'Codziennie'].map(day => (
+                    {/* Pon-Pt */}
+                    <div className="p-3 bg-black/40 rounded-2xl border border-white/5 space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Pon-Pt</span>
                         <button
-                          key={day}
                           type="button"
-                          onClick={() => {
-                            const currentHours = editData.openingHours || { days: [], open: '08:00', close: '20:00', is24h: false };
-                            let newDays = [...(currentHours.days || [])];
-                            if (day === 'Codziennie') {
-                              newDays = newDays.includes('Codziennie') ? [] : ['Codziennie'];
-                            } else {
-                              newDays = newDays.filter(d => d !== 'Codziennie');
-                              newDays = newDays.includes(day) ? newDays.filter(d => d !== day) : [...newDays, day];
-                            }
-                            setEditData({ ...editData, openingHours: { ...currentHours, days: newDays } });
-                          }}
-                          className={cn(
-                            "py-2 rounded-xl text-[8px] font-black uppercase border-2 transition-all",
-                            editData.openingHours?.days?.includes(day) ? "bg-gold/20 text-white border-gold" : "bg-black text-gray-500 border-zinc-800"
-                          )}
+                          onClick={() => setEditData({ ...editData, openingHours: { ...editData.openingHours, weekday: { ...editData.openingHours.weekday, closed: !editData.openingHours.weekday?.closed } } })}
+                          className={cn("text-[7px] font-black uppercase px-1.5 py-0.5 rounded border", editData.openingHours?.weekday?.closed ? "border-rose-500 text-rose-500" : "border-emerald-500 text-emerald-500")}
                         >
-                          {day}
+                          {editData.openingHours?.weekday?.closed ? 'Zamknięte' : 'Otwarte'}
                         </button>
-                      ))}
+                      </div>
+                      {!editData.openingHours?.weekday?.closed && (
+                        <div className="grid grid-cols-2 gap-2">
+                          <input type="time" className="bg-black border border-zinc-800 rounded-lg py-1 px-2 text-white text-[10px]" value={editData.openingHours?.weekday?.open || '08:00'} onChange={e => setEditData({ ...editData, openingHours: { ...editData.openingHours, weekday: { ...editData.openingHours.weekday, open: e.target.value } } })} />
+                          <input type="time" className="bg-black border border-zinc-800 rounded-lg py-1 px-2 text-white text-[10px]" value={editData.openingHours?.weekday?.close || '20:00'} onChange={e => setEditData({ ...editData, openingHours: { ...editData.openingHours, weekday: { ...editData.openingHours.weekday, close: e.target.value } } })} />
+                        </div>
+                      )}
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <input 
-                        type="time"
-                        className="bg-black border border-zinc-800 rounded-xl py-2 px-3 text-white focus:border-gold outline-none text-xs"
-                        value={editData.openingHours?.open || '08:00'}
-                        onChange={e => setEditData({ ...editData, openingHours: { ...(editData.openingHours || {}), open: e.target.value } })}
-                      />
-                      <input 
-                        type="time"
-                        className="bg-black border border-zinc-800 rounded-xl py-2 px-3 text-white focus:border-gold outline-none text-xs"
-                        value={editData.openingHours?.close || '20:00'}
-                        onChange={e => setEditData({ ...editData, openingHours: { ...(editData.openingHours || {}), close: e.target.value } })}
-                      />
+
+                    {/* Sobota */}
+                    <div className="p-3 bg-black/40 rounded-2xl border border-white/5 space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Sobota</span>
+                        <button
+                          type="button"
+                          onClick={() => setEditData({ ...editData, openingHours: { ...editData.openingHours, saturday: { ...editData.openingHours.saturday, closed: !editData.openingHours.saturday?.closed } } })}
+                          className={cn("text-[7px] font-black uppercase px-1.5 py-0.5 rounded border", editData.openingHours?.saturday?.closed ? "border-rose-500 text-rose-500" : "border-emerald-500 text-emerald-500")}
+                        >
+                          {editData.openingHours?.saturday?.closed ? 'Zamknięte' : 'Otwarte'}
+                        </button>
+                      </div>
+                      {!editData.openingHours?.saturday?.closed && (
+                        <div className="grid grid-cols-2 gap-2">
+                          <input type="time" className="bg-black border border-zinc-800 rounded-lg py-1 px-2 text-white text-[10px]" value={editData.openingHours?.saturday?.open || '08:00'} onChange={e => setEditData({ ...editData, openingHours: { ...editData.openingHours, saturday: { ...editData.openingHours.saturday, open: e.target.value } } })} />
+                          <input type="time" className="bg-black border border-zinc-800 rounded-lg py-1 px-2 text-white text-[10px]" value={editData.openingHours?.saturday?.close || '18:00'} onChange={e => setEditData({ ...editData, openingHours: { ...editData.openingHours, saturday: { ...editData.openingHours.saturday, close: e.target.value } } })} />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Niedziela */}
+                    <div className="p-3 bg-black/40 rounded-2xl border border-white/5 space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Niedziela</span>
+                        <button
+                          type="button"
+                          onClick={() => setEditData({ ...editData, openingHours: { ...editData.openingHours, sunday: { ...editData.openingHours.sunday, closed: !editData.openingHours.sunday?.closed } } })}
+                          className={cn("text-[7px] font-black uppercase px-1.5 py-0.5 rounded border", editData.openingHours?.sunday?.closed ? "border-rose-500 text-rose-500" : "border-emerald-500 text-emerald-500")}
+                        >
+                          {editData.openingHours?.sunday?.closed ? 'Zamknięte' : 'Otwarte'}
+                        </button>
+                      </div>
+                      {!editData.openingHours?.sunday?.closed && (
+                        <div className="grid grid-cols-2 gap-2">
+                          <input type="time" className="bg-black border border-zinc-800 rounded-lg py-1 px-2 text-white text-[10px]" value={editData.openingHours?.sunday?.open || '10:00'} onChange={e => setEditData({ ...editData, openingHours: { ...editData.openingHours, sunday: { ...editData.openingHours.sunday, open: e.target.value } } })} />
+                          <input type="time" className="bg-black border border-zinc-800 rounded-lg py-1 px-2 text-white text-[10px]" value={editData.openingHours?.sunday?.close || '16:00'} onChange={e => setEditData({ ...editData, openingHours: { ...editData.openingHours, sunday: { ...editData.openingHours.sunday, close: e.target.value } } })} />
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
