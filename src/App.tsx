@@ -1485,11 +1485,23 @@ function App() {
       {/* App Header (Midnight Gold Style) */}
       <header className="bg-gold-gradient text-white p-4 shadow-lg z-20 flex flex-col gap-4 border-b border-white/10">
         <div className="flex justify-between items-center px-2">
-          <div className="flex items-center gap-3" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
-             <div className="bg-luxury-gold p-2 rounded-xl shadow-lg transform -rotate-3 transition-transform active:scale-90">
-               <Car className="w-6 h-6 text-black" />
+          <div className="flex items-center gap-3 group" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
+             <div className="relative">
+               <div className="bg-luxury-gold p-2.5 rounded-2xl shadow-xl transform group-hover:rotate-12 transition-all duration-500 active:scale-90">
+                 <Car className="w-6 h-6 text-black" />
+               </div>
+               <div className="absolute -top-1 -right-1">
+                 <Sparkles className="w-4 h-4 text-white animate-pulse drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
+               </div>
              </div>
-             <h1 className="text-2xl font-black tracking-tighter italic uppercase tracking-widest text-gold select-none">AutoSpa</h1>
+             <div className="flex flex-col -gap-1">
+               <h1 className="text-2xl font-black tracking-tighter italic uppercase text-gold select-none leading-tight">AutoSpa</h1>
+               <div className="flex items-center gap-1 overflow-hidden">
+                 <div className="h-[1px] w-4 bg-gold/40" />
+                 <span className="text-[7px] font-black uppercase tracking-[0.3em] text-gold/60">Premium</span>
+                 <div className="h-[1px] w-full bg-gold/40" />
+               </div>
+             </div>
           </div>
           <div className="flex gap-1">
             <button 
