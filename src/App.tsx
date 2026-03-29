@@ -39,7 +39,7 @@ const createCustomIcon = (type: CarWashType, isPromoted: boolean) => {
   return L.divIcon({
     className: 'custom-div-icon',
     html: `
-      <div class="marker-pin ${type} ${isPromoted ? 'promoted' : ''}">
+      <div class="marker-pin ${type} ${isPromoted ? 'promoted' : ''} ${type === 'autodetailing' && isPromoted ? 'premium-fx' : ''}">
         <div class="marker-icon-inner">
           ${getIcon()}
         </div>
@@ -1572,7 +1572,12 @@ function CarWashCard({ wash, onClick }: { wash: CarWash, onClick: () => void }) 
         };
       case 'autodetailing':
         return {
-          container: "bg-luxury-gold rounded-[30%_70%_30%_70%/70%_30%_70%_30%] border-2 border-white animate-[premium-pulse_2s_infinite_ease-in-out] shadow-[0_0_20px_rgba(212,175,55,0.6),0_0_10px_#fff]",
+          container: cn(
+            "bg-luxury-gold rounded-[30%_70%_30%_70%/70%_30%_70%_30%] border-2 transition-all",
+            wash.isPromoted 
+              ? "border-white animate-[premium-pulse_2s_infinite_ease-in-out] shadow-[0_0_20px_rgba(212,175,55,0.6),0_0_10px_#fff]" 
+              : "border-black shadow-lg"
+          ),
           icon: "text-black",
           Component: Sparkles
         };
