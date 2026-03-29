@@ -1059,6 +1059,7 @@ function App() {
   const [isLocating, setIsLocating] = useState(false);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [showNearestSelector, setShowNearestSelector] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showFilters, setShowFilters] = useState(false);
   const [sortBy, setSortBy] = useState<'default' | 'likes' | 'distance'>('default');
   const [activeFilters, setActiveFilters] = useState({
@@ -1193,6 +1194,11 @@ function App() {
 
   const handleRejectWash = (id: string) => {
     setPendingWashes(prev => prev.filter(w => w.id !== id));
+  };
+
+  const handleNavigate = (wash: CarWash) => {
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${wash.lat},${wash.lng}`;
+    window.open(url, '_blank');
   };
 
   const handleUpdateSubmission = (updatedWash: any) => {
@@ -1707,7 +1713,15 @@ function App() {
             
             <div className="relative h-64 bg-zinc-900 overflow-hidden shrink-0">
                {selectedWash.images && selectedWash.images.length > 0 ? (
-                 <div className="flex h-full overflow-x-auto snap-x scrollbar-hide no-scrollbar">
+                 <div 
+                   className="flex h-full overflow-x-auto snap-x scrollbar-hide no-scrollbar scroll-smooth"
+                   onScroll={(e) => {
+                     const scrollLeft = (e.target as HTMLDivElement).scrollLeft;
+                     const width = (e.target as HTMLDivElement).clientWidth;
+                     const index = Math.round(scrollLeft / width);
+                     setCurrentImageIndex(index);
+                   }}
+                 >
                    {selectedWash.images.map((img, idx) => (
                      <img key={idx} src={img} alt={`${selectedWash.name} ${idx}`} className="h-full min-w-full object-cover snap-center" />
                    ))}
@@ -1720,15 +1734,17 @@ function App() {
                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent pointer-events-none"></div>
                
                <button 
-                 onClick={() => setActiveView('map')}
+                 onClick={() => { setActiveView('map'); setCurrentImageIndex(0); }}
                  className="absolute top-4 left-4 p-2 bg-black/60 hover:bg-black/80 rounded-xl text-white backdrop-blur border border-white/20 z-10 transition-all active:scale-90"
                >
                  <XCircle className="w-6 h-6" />
                </button>
 
                {selectedWash.images && selectedWash.images.length > 1 && (
-                 <div className="absolute bottom-16 right-4 px-3 py-1 bg-black/60 backdrop-blur rounded-full text-[10px] font-black text-white border border-white/10 z-10">
-                   1 / {selectedWash.images.length}
+                 <div className="absolute bottom-16 right-4 px-3 py-1 bg-black/60 backdrop-blur rounded-full text-[10px] font-black text-white border border-white/10 z-10 flex items-center gap-1.5">
+                   <span className="text-gold">{currentImageIndex + 1}</span>
+                   <span className="opacity-40">/</span>
+                   <span>{selectedWash.images.length}</span>
                  </div>
                )}
 
@@ -1830,7 +1846,11 @@ function App() {
                 </div>
               )}
 
-              <button className="w-full py-4 bg-luxury-gold text-black rounded-2xl font-black text-lg shadow-lg shadow-gold/20 hover:scale-[1.02] active:scale-95 uppercase italic tracking-[0.1em] transition-all">
+              <button 
+                onClick={() => handleNavigate(selectedWash)}
+                className="w-full py-4 bg-luxury-gold text-black rounded-2xl font-black text-lg shadow-lg shadow-gold/20 hover:scale-[1.02] active:scale-95 uppercase italic tracking-[0.1em] transition-all flex items-center justify-center gap-2"
+              >
+                <Navigation className="w-5 h-5 rotate-45" />
                 Nawiguj Teraz
               </button>
 
