@@ -640,21 +640,27 @@ function Onboarding({ onComplete }: { onCancel?: () => void, onComplete: () => v
   const steps = [
     {
       title: "Witaj w AutoSpa",
-      desc: "Twoja luksusowa mapa najlepszych myjni i punktów detailingu w Polsce.",
+      desc: "Ekskluzywna platforma łącząca pasjonatów motoryzacji z najlepszymi punktami pielęgnacji pojazdów w Twojej okolicy.",
       icon: <Sparkles className="w-12 h-12 text-gold" />,
-      features: ["Intuicyjna mapa", "Statusy na żywo", "Najlepsze oceny"]
+      features: ["Selekcja punktów Premium", "Precyzyjna lokalizacja", "Intuicyjny interfejs"]
     },
     {
-      title: "Kolejki na żywo",
-      desc: "Sprawdzaj czas oczekiwania zgłoszony przez innych kierowców w czasie rzeczywistym.",
+      title: "Kolejki pod kontrolą",
+      desc: "Oszczędzaj czas dzięki autorskiemu systemowi raportowania kolejek. Dane są weryfikowane przez społeczność w oparciu o sygnał GPS.",
       icon: <Clock className="w-12 h-12 text-gold" />,
-      features: ["Weryfikacja GPS", "Aktualność 30 min", "System społecznościowy"]
+      features: ["Statusy w czasie rzeczywistym", "Weryfikacja geofencingiem", "Raporty od kierowców"]
     },
     {
-      title: "Panel Właściciela",
-      desc: "Zarządzaj swoim punktem, edytuj ofertę i analizuj statystyki zasięgu.",
+      title: "Inteligentne Filtrowanie",
+      desc: "Znajdź punkt idealnie dopasowany do Twoich potrzeb. Filtruj według konkretnych usług, metod płatności czy udogodnień.",
+      icon: <Filter className="w-12 h-12 text-gold" />,
+      features: ["Szczegółowa oferta usług", "Wszystkie metody płatności", "Wyposażenie dodatkowe"]
+    },
+    {
+      title: "Partnerstwo Biznesowe",
+      desc: "Jesteś właścicielem? Zarządzaj swoją ofertą z poziomu chmury, analizuj statystyki zasięgu i buduj prestiż swojego punktu.",
       icon: <Store className="w-12 h-12 text-gold" />,
-      features: ["Edycja danych", "Analityka kliknięć", "Wyróżnienia Premium"]
+      features: ["Pełna edycja profilu", "Analityka ruchu i kliknięć", "Wyróżnienia na mapie"]
     }
   ];
 
